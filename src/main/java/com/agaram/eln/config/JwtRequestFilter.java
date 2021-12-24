@@ -35,35 +35,29 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		final String requestTokenHeader = request.getHeader("Authorization");
-		
-		
-		
-		String path =request.getRequestURI();
-		int index =path.lastIndexOf("/");
-		String substringtenant= path.substring(index+1);
-		int length= path.length();
-		String substringpath="";
-		if(length>=20) {
-		substringpath=path.substring(1,20);
+
+		String path = request.getRequestURI();
+		int index = path.lastIndexOf("/");
+		String substringtenant = path.substring(index + 1);
+		int length = path.length();
+		String substringpath = "";
+		if (length >= 20) {
+			substringpath = path.substring(1, 20);
 		}
 		final String tenantID;
-		if(substringpath.equals("Instrument/download")) {
-		tenantID =substringtenant;
+		if (substringpath.equals("Instrument/download")) {
+			tenantID = substringtenant;
+		} else {
+			tenantID = request.getHeader("X-TenantID");
 		}
-		else {
-		tenantID = request.getHeader("X-TenantID");
-		}
-		
 
-		
-		final String arciveTenant = request.getHeader("X-TenantID")+"archive";
-		
+		final String arciveTenant = request.getHeader("X-TenantID") + "archive";
+
 		String requestURI = request.getRequestURI();
-        System.out.println("RequestURI::" + requestURI +" || Search for X-TenantID  :: " + tenantID);
-        System.out.println("____________________________________________");
-        
-		if(tenantID != null)
-		{
+		System.out.println("RequestURI::" + requestURI + " || Search for X-TenantID  :: " + tenantID);
+		System.out.println("____________________________________________");
+
+		if (tenantID != null) {
 			TenantContext.setCurrentTenant(tenantID);
 			TenantArchiveContext.setCurrentTenant(arciveTenant);
 		}
@@ -82,7 +76,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 				System.out.println("JWT Token has expired");
 			}
 		} else {
-			logger.warn("JWT Token does not begin with Bearer String"+request.getRequestURL().toString());
+			logger.warn("JWT Token does not begin with Bearer String" + request.getRequestURL().toString());
 		}
 
 		// Once we get the token validate it.
