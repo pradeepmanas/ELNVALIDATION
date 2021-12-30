@@ -47,6 +47,7 @@ import com.agaram.eln.primary.model.fileManipulation.Fileimages;
 import com.agaram.eln.primary.model.fileManipulation.Fileimagestemp;
 import com.agaram.eln.primary.model.fileManipulation.LSfileimages;
 import com.agaram.eln.primary.model.fileManipulation.OrderAttachment;
+import com.agaram.eln.primary.model.fileManipulation.SheetorderlimsRefrence;
 import com.agaram.eln.primary.model.general.OrderCreation;
 import com.agaram.eln.primary.model.general.OrderVersion;
 import com.agaram.eln.primary.model.general.Response;
@@ -60,8 +61,14 @@ import com.agaram.eln.primary.model.instrumentDetails.LSresultdetails;
 import com.agaram.eln.primary.model.instrumentDetails.LsMethodFields;
 import com.agaram.eln.primary.model.instrumentDetails.LsOrderSampleUpdate;
 import com.agaram.eln.primary.model.instrumentDetails.LsOrderattachments;
+import com.agaram.eln.primary.model.instrumentDetails.LsSheetorderlimsrefrence;
 import com.agaram.eln.primary.model.instrumentDetails.Lsordersharedby;
 import com.agaram.eln.primary.model.instrumentDetails.Lsordershareto;
+import com.agaram.eln.primary.model.instrumentsetup.InstrumentMaster;
+import com.agaram.eln.primary.model.instrumentsetup.InstrumentCategory;
+import com.agaram.eln.primary.model.methodsetup.Method;
+import com.agaram.eln.primary.model.methodsetup.ParserBlock;
+import com.agaram.eln.primary.model.methodsetup.ParserField;
 import com.agaram.eln.primary.model.masters.Lsrepositories;
 import com.agaram.eln.primary.model.masters.Lsrepositoriesdata;
 import com.agaram.eln.primary.model.sheetManipulation.LSfilemethod;
@@ -97,10 +104,13 @@ import com.agaram.eln.primary.repository.instrumentDetails.LSresultdetailsReposi
 import com.agaram.eln.primary.repository.instrumentDetails.LsMethodFieldsRepository;
 import com.agaram.eln.primary.repository.instrumentDetails.LsOrderSampleUpdateRepository;
 import com.agaram.eln.primary.repository.instrumentDetails.LsOrderattachmentsRepository;
+import com.agaram.eln.primary.repository.instrumentDetails.LsSheetorderlimsrefrenceRepository;
 import com.agaram.eln.primary.repository.instrumentDetails.LselninstrumentmasterRepository;
 import com.agaram.eln.primary.repository.instrumentDetails.LsordersharedbyRepository;
 import com.agaram.eln.primary.repository.instrumentDetails.LsordersharetoRepository;
 import com.agaram.eln.primary.repository.instrumentDetails.LsorderworkflowhistoryRepositroy;
+import com.agaram.eln.primary.repository.instrumentsetup.InstMasterRepository;
+import com.agaram.eln.primary.repository.instrumentsetup.InstCategoryRepository;
 import com.agaram.eln.primary.repository.masters.LsrepositoriesdataRepository;
 import com.agaram.eln.primary.repository.sheetManipulation.LSfilemethodRepository;
 import com.agaram.eln.primary.repository.sheetManipulation.LSparsedparametersRespository;
@@ -118,6 +128,9 @@ import com.agaram.eln.primary.repository.usermanagement.LSprojectmasterRepositor
 import com.agaram.eln.primary.repository.usermanagement.LSuserMasterRepository;
 import com.agaram.eln.primary.repository.usermanagement.LSusersteamRepository;
 import com.agaram.eln.primary.repository.usermanagement.LSuserteammappingRepository;
+import com.agaram.eln.primary.repository.methodsetup.ParserFieldRepository;
+import com.agaram.eln.primary.repository.methodsetup.ParserBlockRepository;
+import com.agaram.eln.primary.repository.methodsetup.MethodRepository;
 import com.agaram.eln.primary.service.cloudFileManip.CloudFileManipulationservice;
 import com.agaram.eln.primary.service.fileManipulation.FileManipulationservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -133,6 +146,14 @@ public class InstrumentService {
 	private LsMethodFieldsRepository lsMethodFieldsRepository;
 	@Autowired
 	private LSinstrumentsRepository lSinstrumentsRepository;
+	@Autowired
+	private InstMasterRepository lsInstMasterRepository;
+	@Autowired
+	private MethodRepository lsMethodRepository;
+	@Autowired
+	private ParserBlockRepository lsParserBlockRepository;
+	@Autowired
+	private ParserFieldRepository lsParserRepository;
 	@Autowired
 	private LSfieldsRepository lSfieldsRepository;
 	@Autowired
@@ -242,6 +263,9 @@ public class InstrumentService {
 	@Autowired
 	private FileimagestempRepository FileimagestempRepository;
 
+	@Autowired
+	private LsSheetorderlimsrefrenceRepository lssheetorderlimsrefrenceRepository;
+
 	public Map<String, Object> getInstrumentparameters(LSSiteMaster lssiteMaster) {
 		Map<String, Object> obj = new HashMap<>();
 		List<String> lsInst = new ArrayList<String>();
@@ -252,14 +276,24 @@ public class InstrumentService {
 		if (lssiteMaster.getIsmultitenant() != 1) {
 			List<LSfields> Generalfields = lSfieldsRepository.findByisactive(1);
 			List<LSinstruments> Instruments = lSinstrumentsRepository.findAll();
+			List<InstrumentMaster> InstrMaster = lsInstMasterRepository.findAll();
 			List<LsMappedTemplate> MappedTemplate = LsMappedTemplateRepository.findAll();
 			List<LsUnmappedTemplate> UnmappedTemplate = LsUnmappedTemplateRepository.findAll();
+			
+			List<Method> elnMethod=lsMethodRepository.findAll();
+			List<ParserBlock> ParserBlock=lsParserBlockRepository.findAll();
+			List<ParserField> ParserField=lsParserRepository.findAll();
+			
 			obj.put("Generalfields", Generalfields);
 			obj.put("Instruments", Instruments);
+			obj.put("Instrmaster", InstrMaster);
 			obj.put("elninstrument", lselninstrumentmasterRepository
 					.findBylssitemasterAndStatusOrderByInstrumentcodeDesc(lssiteMaster, 1));
 			obj.put("Mappedtemplates", MappedTemplate);
 			obj.put("Unmappedtemplates", UnmappedTemplate);
+			obj.put("ELNMethods", elnMethod);
+			obj.put("ParserBlock", ParserBlock);
+			obj.put("ParserField", ParserField);
 		} else {
 			List<LSfields> Generalfields = lSfieldsRepository.findBymethodname("ID_GENERAL");
 			obj.put("Generalfields", Generalfields);
@@ -307,12 +341,11 @@ public class InstrumentService {
 		} else {
 			Content = objorder.getLssamplefile().getFilecontent();
 		}
-		
-		if(objorder.getLssamplefile().getLssamplefileversion() != null)
-		{
+
+		if (objorder.getLssamplefile().getLssamplefileversion() != null) {
 
 			String Contentversion = objorder.getLssamplefile().getLssamplefileversion().get(0).getFilecontent();
-			 objorder.getLssamplefile().getLssamplefileversion().get(0).setFilecontent(null);
+			objorder.getLssamplefile().getLssamplefileversion().get(0).setFilecontent(null);
 			lssamplefileversionRepository.save(objorder.getLssamplefile().getLssamplefileversion());
 			updateorderversioncontent(Contentversion, objorder.getLssamplefile().getLssamplefileversion().get(0),
 					objorder.getIsmultitenant());
@@ -1297,7 +1330,7 @@ public class InstrumentService {
 		List<Long> lstBatchcode = new ArrayList<Long>();
 
 //		List<LSworkflow> lstworkflow = GetWorkflowonuser(objorder.getLsuserMaster().getLsusergrouptrans());
-		
+
 		List<LSworkflow> lstworkflow = objorder.getLstworkflow();
 
 		long pendingcount = 0;
@@ -1824,11 +1857,10 @@ public class InstrumentService {
 
 		return objupdatedorder;
 	}
-	
-	private String GetSamplefileconent(LSsamplefile lssamplefile, Integer ismultitenant)
-	{
+
+	private String GetSamplefileconent(LSsamplefile lssamplefile, Integer ismultitenant) {
 		String content = "";
-		
+
 		if (lssamplefile != null) {
 			if (ismultitenant == 1) {
 				CloudOrderCreation file = cloudOrderCreationRepository
@@ -1837,14 +1869,13 @@ public class InstrumentService {
 					content = file.getContent();
 				}
 			} else {
-				OrderCreation file = mongoTemplate.findById(lssamplefile.getFilesamplecode(),
-						OrderCreation.class);
+				OrderCreation file = mongoTemplate.findById(lssamplefile.getFilesamplecode(), OrderCreation.class);
 				if (file != null) {
 					content = file.getContent();
 				}
 			}
 		}
-		
+
 		return content;
 	}
 
@@ -1928,12 +1959,10 @@ public class InstrumentService {
 
 	public LSsamplefile SaveResultfile(LSsamplefile objfile) {
 
-		
-		Integer lastversionindex =  objfile.getVersionno() != null ? objfile.getVersionno() - 1:0;
-		
+		Integer lastversionindex = objfile.getVersionno() != null ? objfile.getVersionno() - 1 : 0;
+
 		boolean versionexist = true;
-		if(objfile.getLssamplefileversion().size() <= 0)
-		{
+		if (objfile.getLssamplefileversion().size() <= 0) {
 			versionexist = false;
 			lastversionindex = 0;
 			LSsamplefileversion lsversion = new LSsamplefileversion();
@@ -1946,40 +1975,36 @@ public class InstrumentService {
 			lsversion.setModifieddate(objfile.getModifieddate());
 			lsversion.setModifiedby(objfile.getModifiedby());
 			objfile.getLssamplefileversion().add(lsversion);
-			
+
 			lssamplefileversionRepository.save(objfile.getLssamplefileversion());
-			
+
 		}
-		
-		if(objfile.isDoversion() && versionexist)
-		{
-			
+
+		if (objfile.isDoversion() && versionexist) {
+
 			Integer perviousversion = -1;
-			if(objfile.getVersionno() >= 2)
-			{
+			if (objfile.getVersionno() != null && objfile.getVersionno() >= 2) {
 				perviousversion = objfile.getVersionno() - 2;
 			}
-			
+
 //			if (lastversionindex == -1) {
 //				Contentversion = objfile.getFilecontent();
 //				lastversionindex = 0;
 //				lssamplefileversionRepository.save(objfile.getLssamplefileversion());
 //			} else {
 //			
-			String Contentversion = GetSamplefileconent(objfile,objfile.getIsmultitenant());
-				objfile.getLssamplefileversion().get(lastversionindex).setFilecontent(null);
-				lssamplefileversionRepository.save(objfile.getLssamplefileversion());
-				updateorderversioncontent(objfile.getFilecontent(), objfile.getLssamplefileversion().get(lastversionindex),
-						objfile.getIsmultitenant());
-				if(perviousversion >-1)
-				{
+			String Contentversion = GetSamplefileconent(objfile, objfile.getIsmultitenant());
+			objfile.getLssamplefileversion().get(lastversionindex).setFilecontent(null);
+			lssamplefileversionRepository.save(objfile.getLssamplefileversion());
+			updateorderversioncontent(objfile.getFilecontent(), objfile.getLssamplefileversion().get(lastversionindex),
+					objfile.getIsmultitenant());
+			if (perviousversion > -1) {
 				updateorderversioncontent(Contentversion, objfile.getLssamplefileversion().get(perviousversion),
 						objfile.getIsmultitenant());
-				}
-				
-				//objfile.setVersionno(objfile.getVersionno()+1);
+			}
+
+			// objfile.setVersionno(objfile.getVersionno()+1);
 //			}
-			
 
 //			if (objfile.getLssamplefileversion() != null ) {
 //				if (objfile.getObjActivity().getObjsilentaudit() != null) {
@@ -1997,17 +2022,13 @@ public class InstrumentService {
 //					lscfttransactionRepository.save(objfile.getObjActivity().getObjsilentaudit());
 //				}
 //			}
-		}
-		else
-		{
+		} else {
 			updateorderversioncontent(objfile.getFilecontent(), objfile.getLssamplefileversion().get(lastversionindex),
 					objfile.getIsmultitenant());
 		}
-		
+
 		objfile.setProcessed(1);
-		
-		
-		
+
 		String Content = objfile.getFilecontent();
 		objfile.setFilecontent(null);
 		lssamplefileRepository.save(objfile);
@@ -2019,10 +2040,6 @@ public class InstrumentService {
 			lsactivityRepository.save(objfile.getObjActivity());
 		}
 
-		if (objfile.getObjsilentaudit() != null) {
-			objfile.getObjsilentaudit().setTableName("LSsamplefile");
-//			lscfttransactionRepository.save(objfile.getObjsilentaudit());
-		}
 		objfile.setResponse(new Response());
 		objfile.getResponse().setStatus(true);
 		objfile.getResponse().setInformation("ID_DUMMY1");
@@ -2224,21 +2241,23 @@ public class InstrumentService {
 	}
 
 	public LSlogilablimsorderdetail updateworflowforOrder(LSlogilablimsorderdetail objorder) {
+
 		LSlogilablimsorderdetail lsOrder = lslogilablimsorderdetailRepository.findOne(objorder.getBatchcode());
 
 		updatenotificationfororderworkflow(objorder, lsOrder.getLsworkflow());
 
 		lsorderworkflowhistoryRepositroy.save(objorder.getLsorderworkflowhistory());
+
 		lslogilablimsorderdetailRepository.save(objorder);
 
 //		silent audit
-		if (objorder.getLsorderworkflowhistory().get(objorder.getLsorderworkflowhistory().size() - 1)
-				.getObjsilentaudit() != null) {
-			objorder.getLsorderworkflowhistory().get(objorder.getLsorderworkflowhistory().size() - 1)
-					.getObjsilentaudit().setTableName("LSlogilablimsorderdetail");
-			lscfttransactionRepository.save(objorder.getLsorderworkflowhistory()
-					.get(objorder.getLsorderworkflowhistory().size() - 1).getObjsilentaudit());
-		}
+//		if (objorder.getLsorderworkflowhistory().get(objorder.getLsorderworkflowhistory().size() - 1)
+//				.getObjsilentaudit() != null) {
+//			objorder.getLsorderworkflowhistory().get(objorder.getLsorderworkflowhistory().size() - 1)
+//					.getObjsilentaudit().setTableName("LSlogilablimsorderdetail");
+//			lscfttransactionRepository.save(objorder.getLsorderworkflowhistory()
+//					.get(objorder.getLsorderworkflowhistory().size() - 1).getObjsilentaudit());
+//		}
 		return objorder;
 	}
 
@@ -2851,10 +2870,10 @@ public class InstrumentService {
 			try {
 				gridFsFile = retrieveLargeFile(fileid);
 			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 			System.out.println(gridFsFile.getContentType());
@@ -2959,54 +2978,56 @@ public class InstrumentService {
 	}
 
 	public List<Integer> Getuserworkflow(LSusergroup lsusergroup) {
-		if(lsusergroup != null) {
-		List<LSworkflowgroupmapping> lsworkflowgroupmapping = lsworkflowgroupmappingRepository
-				.findBylsusergroup(lsusergroup);
+		if (lsusergroup != null) {
+			List<LSworkflowgroupmapping> lsworkflowgroupmapping = lsworkflowgroupmappingRepository
+					.findBylsusergroup(lsusergroup);
 
-		List<LSworkflow> lsworkflow = lsworkflowRepository.findByLsworkflowgroupmappingIn(lsworkflowgroupmapping);
+			List<LSworkflow> lsworkflow = lsworkflowRepository.findByLsworkflowgroupmappingIn(lsworkflowgroupmapping);
 
-		List<Integer> lstworkflow = new ArrayList<Integer>();
-		if (lsworkflow != null && lsworkflow.size() > 0) {
-			lstworkflow = lsworkflow.stream().map(LSworkflow::getWorkflowcode).collect(Collectors.toList());
-		}
+			List<Integer> lstworkflow = new ArrayList<Integer>();
+			if (lsworkflow != null && lsworkflow.size() > 0) {
+				lstworkflow = lsworkflow.stream().map(LSworkflow::getWorkflowcode).collect(Collectors.toList());
+			}
 
-		return lstworkflow;
-		}else {
+			return lstworkflow;
+		} else {
 			List<Integer> lstworkflow = new ArrayList<Integer>();
 			return lstworkflow;
 		}
 	}
 
 	public Map<String, Object> Getuserprojects(LSuserMaster objuser) {
-		if(objuser.getUsercode() != null) {
-		Map<String, Object> objmap = new HashMap<>();
-		List<LSuserteammapping> lstteammap = lsuserteammappingRepository.findByLsuserMasterAndTeamcodeNotNull(objuser);
-		List<LSusersteam> lstteam = lsusersteamRepository.findByLsuserteammappingIn(lstteammap);
-		List<LSprojectmaster> lstprojectmaster = lsprojectmasterRepository.findByLsusersteamIn(lstteam);
+		if (objuser.getUsercode() != null) {
+			Map<String, Object> objmap = new HashMap<>();
+			List<LSuserteammapping> lstteammap = lsuserteammappingRepository
+					.findByLsuserMasterAndTeamcodeNotNull(objuser);
+			List<LSusersteam> lstteam = lsusersteamRepository.findByLsuserteammappingIn(lstteammap);
+			List<LSprojectmaster> lstprojectmaster = lsprojectmasterRepository.findByLsusersteamIn(lstteam);
 
-		List<Integer> lstproject = new ArrayList<Integer>();
-		if (lstprojectmaster != null && lstprojectmaster.size() > 0) {
-			lstproject = lstprojectmaster.stream().map(LSprojectmaster::getProjectcode).collect(Collectors.toList());
-		}
-
-		List<Integer> lstteamcode = new ArrayList<Integer>();
-		if (lstteam != null && lstteam.size() > 0) {
-			lstteamcode = lstteam.stream().map(LSusersteam::getTeamcode).collect(Collectors.toList());
-		}
-
-		List<Integer> lstteamusercode = new ArrayList<Integer>();
-		if (lstteammap != null && lstteammap.size() > 0) {
-			List<LSuserMaster> lstusers = lsuserteammappingRepository.getLsuserMasterByTeamcode(lstteamcode);
-			if (lstusers != null && lstusers.size() > 0) {
-				lstteamusercode = lstusers.stream().map(LSuserMaster::getUsercode).collect(Collectors.toList());
+			List<Integer> lstproject = new ArrayList<Integer>();
+			if (lstprojectmaster != null && lstprojectmaster.size() > 0) {
+				lstproject = lstprojectmaster.stream().map(LSprojectmaster::getProjectcode)
+						.collect(Collectors.toList());
 			}
-		}
 
-		objmap.put("project", lstproject);
-		objmap.put("team", lstteamcode);
-		objmap.put("teamuser", lstteamusercode);
-		return objmap;
-		}else {
+			List<Integer> lstteamcode = new ArrayList<Integer>();
+			if (lstteam != null && lstteam.size() > 0) {
+				lstteamcode = lstteam.stream().map(LSusersteam::getTeamcode).collect(Collectors.toList());
+			}
+
+			List<Integer> lstteamusercode = new ArrayList<Integer>();
+			if (lstteammap != null && lstteammap.size() > 0) {
+				List<LSuserMaster> lstusers = lsuserteammappingRepository.getLsuserMasterByTeamcode(lstteamcode);
+				if (lstusers != null && lstusers.size() > 0) {
+					lstteamusercode = lstusers.stream().map(LSuserMaster::getUsercode).collect(Collectors.toList());
+				}
+			}
+
+			objmap.put("project", lstproject);
+			objmap.put("team", lstteamcode);
+			objmap.put("teamuser", lstteamusercode);
+			return objmap;
+		} else {
 			Map<String, Object> objmap = new HashMap<>();
 			return objmap;
 		}
@@ -3280,4 +3301,41 @@ public class InstrumentService {
 		}
 		return true;
 	}
+	
+	public Map<String, Object> UploadLimsFile(MultipartFile file, Long batchcode, String filename)
+			throws IOException {
+		
+		Map<String, Object> mapObj = new HashMap<String, Object>();
+
+		LsSheetorderlimsrefrence objattachment = new LsSheetorderlimsrefrence();
+
+		SheetorderlimsRefrence objfile = fileManipulationservice.storeLimsSheetRefrence(file);
+
+		if (objfile != null) {
+			objattachment.setFileid(objfile.getId());
+		}
+
+		objattachment.setFilename(filename);
+		objattachment.setBatchcode(batchcode);
+//		objattachment.setTestcode(testcode);
+
+		lssheetorderlimsrefrenceRepository.save(objattachment);
+		
+		mapObj.put("elnSheet", objattachment);
+		
+		return mapObj;
+	}
+
+	public LsSheetorderlimsrefrence downloadSheetFromELN(LsSheetorderlimsrefrence objattachments) {
+
+		SheetorderlimsRefrence objfile = fileManipulationservice.LimsretrieveELNsheet(objattachments);
+
+		if (objfile != null) {
+			objattachments.setFile(objfile.getFile());
+
+		}
+
+		return objattachments;
+	}
+
 }

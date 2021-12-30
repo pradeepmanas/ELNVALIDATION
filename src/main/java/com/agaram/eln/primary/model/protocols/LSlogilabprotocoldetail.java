@@ -95,6 +95,8 @@ public class LSlogilabprotocoldetail implements Comparable<LSlogilabprotocoldeta
 
 	@ManyToOne
 	private LSuserMaster assignedto;
+	
+	public Integer versionno = 1;
 
 	@Transient
 	LoggedUser objuser;
@@ -111,9 +113,20 @@ public class LSlogilabprotocoldetail implements Comparable<LSlogilabprotocoldeta
 	@Transient
 	private Date todate;
 	
+	@Transient
+	private String testname;
+	
 //	@Transient
 //	private String tenantname;
 	
+	public String getTestname() {
+		return testname;
+	}
+
+	public void setTestname(String testname) {
+		this.testname = testname;
+	}
+
 	@Transient
 	private String originurl;
 
@@ -126,6 +139,25 @@ public class LSlogilabprotocoldetail implements Comparable<LSlogilabprotocoldeta
 	@Transient
 	private List<LSprotocolorderworkflowhistory> lsprotocolorderworkflowhistory;
 	
+	@Transient
+	private Integer register;
+	
+	public Integer getVersionno() {
+		return versionno;
+	}
+
+	public Integer getRegister() {
+		return register;
+	}
+
+	public void setVersionno(Integer versionno) {
+		this.versionno = versionno;
+	}
+
+	public void setRegister(Integer register) {
+		this.register = register;
+	}
+
 	public List<LSprotocolorderworkflowhistory> getLsprotocolorderworkflowhistory() {
 		return lsprotocolorderworkflowhistory;
 	}

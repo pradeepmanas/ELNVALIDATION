@@ -6,10 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonProcessingException;
-import com.agaram.eln.primary.model.protocols.ProtocolorderImage;
-import com.agaram.eln.primary.model.protocols.Protocolordervideos;
-import com.agaram.eln.primary.model.protocols.Protocolvideos;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -47,6 +44,10 @@ import com.agaram.eln.primary.model.protocols.LSprotocolworkflow;
 import com.agaram.eln.primary.model.protocols.Lsprotocolsharedby;
 import com.agaram.eln.primary.model.protocols.Lsprotocolshareto;
 import com.agaram.eln.primary.model.protocols.ProtocolImage;
+import com.agaram.eln.primary.model.protocols.ProtocolorderImage;
+import com.agaram.eln.primary.model.protocols.Protocolordervideos;
+import com.agaram.eln.primary.model.protocols.Protocolvideos;
+import com.agaram.eln.primary.model.sheetManipulation.LStestmasterlocal;
 import com.agaram.eln.primary.model.usermanagement.LSSiteMaster;
 import com.agaram.eln.primary.model.usermanagement.LSuserMaster;
 import com.agaram.eln.primary.service.protocol.ProtocolService;
@@ -306,6 +307,11 @@ public class ProtocolController {
 		return ProtocolMasterService.GetProtocolTemplateVerionLst(argObj);
 	}
 	
+	@RequestMapping("/GetProtocolorderVerionLst")
+	public Map<String, Object> GetProtocolorderVerionLst(@RequestBody Map<String, Object> argObj) {
+		return ProtocolMasterService.GetProtocolorderVerionLst(argObj);
+	}
+	
 	@PostMapping("/getprotocols")
 	public List <LSprotocolmaster> getprotocols(@RequestBody LSuserMaster objusers)
 	{
@@ -349,7 +355,7 @@ public class ProtocolController {
 	}
 	
 	@PostMapping("/uploadprotocols")
-	public Map<String, Object> uploadprotocols(@RequestParam Map<String, Object> body)
+	public Map<String, Object> uploadprotocols(@RequestBody Map<String, Object> body)
 	{
 		return ProtocolMasterService.uploadprotocols(body);
 //		return true;
@@ -456,7 +462,7 @@ public class ProtocolController {
 	}
 	
 	@PostMapping("/uploadprotocolsordersstep")
-	public Map<String, Object> uploadprotocolsordersstep(@RequestParam Map<String, Object> body)
+	public Map<String, Object> uploadprotocolsordersstep(@RequestBody Map<String, Object> body)
 	{
 		return ProtocolMasterService.uploadprotocolsordersstep(body);
 //		return true;
@@ -930,5 +936,16 @@ public class ProtocolController {
 	protected boolean getprojectteam(@RequestBody LSuserMaster objClass) {
 
 		return ProtocolMasterService.getprojectteam(objClass);
+	}
+	
+	@RequestMapping(value = "/skipprotocolstep")
+	protected LSlogilabprotocolsteps skipprotocolstep(@RequestBody LSlogilabprotocolsteps lslogilabprotocolsteps) {
+
+		return ProtocolMasterService.skipprotocolstep(lslogilabprotocolsteps);
+	}
+	
+	@GetMapping("/gettaskmaster")
+	public List<LStestmasterlocal> gettaskmaster(HttpServletRequest request) {
+		return ProtocolMasterService.gettaskmaster();
 	}
 }
