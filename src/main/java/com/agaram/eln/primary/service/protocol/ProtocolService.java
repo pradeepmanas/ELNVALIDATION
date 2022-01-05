@@ -1722,6 +1722,40 @@ public class ProtocolService {
 			LsProto.setApproved(0);
 		}
 		lsprotocolorderworkflowhistoryRepository.save(objClass.getLsprotocolorderworkflowhistory());
+
+		List<LSlogilabprotocoldetail> LSlogilabprotocoldetail = new ArrayList<LSlogilabprotocoldetail>();
+		LSlogilabprotocoldetail.add(objClass);
+		LSusergroup userGroup = LSusergroupRepository.findOne(objClass.getObjuser().getMultiusergroupcode());
+
+		List<LSprotocolworkflowgroupmap> lsworkflowgroupmapping = LSprotocolworkflowgroupmapRepository
+				.findBylsusergroupAndWorkflowcodeNotNull(userGroup);
+		List<LSuserteammapping> LSuserteammapping = LSuserteammappingRepositoryObj
+				.findByLsuserMasterAndTeamcodeNotNull(objClass.getLsuserMaster());
+		List<LSprotocolworkflow> lsprotocolworkflow = lSprotocolworkflowRepository
+				.findByLsprotocolworkflowgroupmapInOrderByWorkflowcodeDesc(lsworkflowgroupmapping);
+		if (lsworkflowgroupmapping != null && lsworkflowgroupmapping.size() > 0) {
+		LSlogilabprotocoldetail.forEach((objorder) -> {
+			if (lsprotocolworkflow != null && objorder.getlSprotocolworkflow() != null
+					&& lsprotocolworkflow.size() > 0) {
+				List<Integer> lstprotocolworkflowcode = new ArrayList<Integer>();
+				if (lsprotocolworkflow != null && lsprotocolworkflow.size() > 0) {
+					lstprotocolworkflowcode = lsprotocolworkflow.stream().map(LSprotocolworkflow::getWorkflowcode)
+							.collect(Collectors.toList());
+
+					if (lstprotocolworkflowcode.contains(objorder.getlSprotocolworkflow().getWorkflowcode())) {
+						objorder.setCanuserprocess(true);
+					} else {
+						objorder.setCanuserprocess(false);
+					}
+				} else {
+					objorder.setCanuserprocess(false);
+				}
+			} else {
+				objorder.setCanuserprocess(false);
+			}
+		});
+		}
+		mapObj.put("curentprotocolorder", LSlogilabprotocoldetail);
 		mapObj.put("ProtocolObj", LsProto);
 		mapObj.put("status", "success");
 
@@ -1896,17 +1930,19 @@ public class ProtocolService {
 
 						LSprotocolstepInformation lsprotocolstepInformation = lsprotocolstepInformationRepository
 								.findById(LSprotocolstepObj1.getProtocolstepcode());
-						if (lsprotocolstepInformation != null && lSlogilabprotocoldetail.getProtocoltype() == 1) {
-							String stepinfo = lsprotocolstepInformation.getLsprotocolstepInfo();
-							stepinfo = stepinfo.replaceAll("<p>", "<p contenteditable='false'>");
-							String stepinfono = stepinfo.replaceAll("<p contenteditable='false'><br></p>",
-									"<p><br></p>");
+						if (lsprotocolstepInformation != null) {
+							if (lsprotocolstepInformation != null && lSlogilabprotocoldetail.getProtocoltype() == 1) {
+								String stepinfo = lsprotocolstepInformation.getLsprotocolstepInfo();
+								stepinfo = stepinfo.replaceAll("<p>", "<p contenteditable='false'>");
+								String stepinfono = stepinfo.replaceAll("<p contenteditable='false'><br></p>",
+										"<p><br></p>");
 
-							LSprotocolstepObj1.setLsprotocolstepInfo(stepinfono);
-						} else {
-							LSprotocolstepObj1.setLsprotocolstepInfo(lsprotocolstepInformation.getLsprotocolstepInfo());
+								LSprotocolstepObj1.setLsprotocolstepInfo(stepinfono);
+							} else {
+								LSprotocolstepObj1
+										.setLsprotocolstepInfo(lsprotocolstepInformation.getLsprotocolstepInfo());
+							}
 						}
-
 						CloudLsLogilabprotocolstepInfo CloudLSprotocolstepInfoObj = new CloudLsLogilabprotocolstepInfo();
 						CloudLSprotocolstepInfoObj.setId(LSprotocolstepObj1.getProtocolorderstepcode());
 						CloudLSprotocolstepInfoObj.setLsprotocolstepInfo(LSprotocolstepObj1.getLsprotocolstepInfo());
@@ -1970,11 +2006,11 @@ public class ProtocolService {
 //				if (lSlogilabprotocoldetail.getIsmultitenant() == 1) {
 				boolean isversion = true;
 				boolean nochanges = true;
-				if(lSlogilabprotocoldetail.getProtocoltype()==1) {
+				if (lSlogilabprotocoldetail.getProtocoltype() == 1) {
 //						updateCloudProtocolorderVersion(lSlogilabprotocoldetail,LSprotocolstepObj1);
-				updateCloudProtocolorderVersion(lSlogilabprotocoldetail.getProtocolordercode(), null, null, null,
-						isversion, lSlogilabprotocoldetail.getSitecode(), nochanges,
-						lSlogilabprotocoldetail.getIsmultitenant());
+					updateCloudProtocolorderVersion(lSlogilabprotocoldetail.getProtocolordercode(), null, null, null,
+							isversion, lSlogilabprotocoldetail.getSitecode(), nochanges,
+							lSlogilabprotocoldetail.getIsmultitenant());
 				}
 //				}
 
@@ -2019,9 +2055,9 @@ public class ProtocolService {
 					.findByLsprotocolworkflowgroupmapInOrderByWorkflowcodeDesc(lsworkflowgroupmapping);
 
 			lstPendingOrder = LSlogilabprotocoldetailRepository
-					.findByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-							lSlogilabprotocoldetail.getTodate());
+					.findByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 //			lstPendingOrder.forEach(objorder -> objorder
 //					.setCanuserprocess(lsprotocolworkflow.equals(objorder.getlSprotocolworkflow()) ? true : false));
@@ -2050,19 +2086,21 @@ public class ProtocolService {
 				}
 			});
 
-			pendingcount = LSlogilabprotocoldetailRepository.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-					lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-					lSlogilabprotocoldetail.getTodate());
+			pendingcount = LSlogilabprotocoldetailRepository
+					.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 		} else if (LSuserteammapping != null && LSuserteammapping.size() > 0) {
 			lstPendingOrder = LSlogilabprotocoldetailRepository
-					.findByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-							lSlogilabprotocoldetail.getTodate());
+					.findByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			lstPendingOrder.forEach(objorder -> objorder.setCanuserprocess(false));
 
-			pendingcount = LSlogilabprotocoldetailRepository.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-					lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-					lSlogilabprotocoldetail.getTodate());
+			pendingcount = LSlogilabprotocoldetailRepository
+					.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 		}
 //		int pendingcount = LSlogilabprotocoldetailRepository.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
 //				lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
@@ -2401,9 +2439,9 @@ public class ProtocolService {
 //						lSlogilabprotocoldetail.getProtocoltype(), "R");
 
 		List<LSlogilabprotocoldetail> lstCompletedOrder = LSlogilabprotocoldetailRepository
-				.findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-						lSlogilabprotocoldetail.getProtocoltype(), "R", lSlogilabprotocoldetail.getFromdate(),
-						lSlogilabprotocoldetail.getTodate());
+				.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+						lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "R",
+						lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 		LSusergroup userGroup = LSusergroupRepository
 				.findOne(lSlogilabprotocoldetail.getObjuser().getMultiusergroupcode());
@@ -2424,9 +2462,9 @@ public class ProtocolService {
 					.findByLsprotocolworkflowgroupmapInOrderByWorkflowcodeDesc(lsworkflowgroupmapping);
 
 			lstPendingOrder = LSlogilabprotocoldetailRepository
-					.findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-							lSlogilabprotocoldetail.getTodate());
+					.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 			lstPendingOrder.forEach((objorder) -> {
 
@@ -2452,38 +2490,42 @@ public class ProtocolService {
 				}
 			});
 
-			pendingcount = LSlogilabprotocoldetailRepository.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-					lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-					lSlogilabprotocoldetail.getTodate());
+			pendingcount = LSlogilabprotocoldetailRepository
+					.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 //			lstPendingOrder.forEach(objorder -> objorder
 //					.setCanuserprocess(lsprotocolworkflow.equals(objorder.getlSprotocolworkflow()) ? true : false));
 		} else if (LSuserteammapping != null && LSuserteammapping.size() == 0) {
 			lstPendingOrder = LSlogilabprotocoldetailRepository
-					.findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-							lSlogilabprotocoldetail.getTodate());
+					.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			lstPendingOrder.forEach(objorder -> objorder.setCanuserprocess(false));
 
-			pendingcount = LSlogilabprotocoldetailRepository.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-					lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-					lSlogilabprotocoldetail.getTodate());
+			pendingcount = LSlogilabprotocoldetailRepository
+					.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 		}
 
 //		 pendingcount = LSlogilabprotocoldetailRepository.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
 //				lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
 //				lSlogilabprotocoldetail.getTodate());
 		int completedcount = LSlogilabprotocoldetailRepository
-				.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(lSlogilabprotocoldetail.getProtocoltype(),
-						"R", lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
-
-		int myordercount = (int) LSlogilabprotocoldetailRepository
-				.countByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(
-						lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getAssignedto(),
+				.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+						lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "R",
 						lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
+		int myordercount = (int) LSlogilabprotocoldetailRepository
+				.countByProtocoltypeAndSitecodeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(
+						lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+						lSlogilabprotocoldetail.getAssignedto(), lSlogilabprotocoldetail.getFromdate(),
+						lSlogilabprotocoldetail.getTodate());
+
 		int assignedcount = (int) LSlogilabprotocoldetailRepository
-				.countByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(
-						lSlogilabprotocoldetail.getProtocoltype(), "N",
+				.countByProtocoltypeAndSitecodeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(
+						lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
 //				.countByOrderflagAndCreatebyAndCreatedtimestampBetween("N",
 						lSlogilabprotocoldetail.getLsuserMaster(), lSlogilabprotocoldetail.getFromdate(),
 						lSlogilabprotocoldetail.getTodate());
@@ -2539,9 +2581,9 @@ public class ProtocolService {
 						.findByLsprotocolworkflowgroupmapInOrderByWorkflowcodeDesc(lsworkflowgroupmapping);
 
 				lstPendingOrder = LSlogilabprotocoldetailRepository
-						.findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-								lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-								lSlogilabprotocoldetail.getTodate());
+						.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+								lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+								lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 //				lstPendingOrder.forEach(objorder -> objorder
 //						.setCanuserprocess(lsprotocolworkflow.equals(objorder.getlSprotocolworkflow()) ? true : false));
@@ -2570,20 +2612,20 @@ public class ProtocolService {
 				});
 
 				pendingcount = LSlogilabprotocoldetailRepository
-						.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-								lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-								lSlogilabprotocoldetail.getTodate());
+						.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+								lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+								lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			} else if (LSuserteammapping != null && LSuserteammapping.size() > 0) {
 				lstPendingOrder = LSlogilabprotocoldetailRepository
-						.findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-								lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-								lSlogilabprotocoldetail.getTodate());
+						.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+								lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+								lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 				lstPendingOrder.forEach(objorder -> objorder.setCanuserprocess(false));
 
 				pendingcount = LSlogilabprotocoldetailRepository
-						.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-								lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-								lSlogilabprotocoldetail.getTodate());
+						.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+								lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+								lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			}
 
 //			if (lstPendingOrder.size() == 0) {
@@ -2596,33 +2638,36 @@ public class ProtocolService {
 //			lstOrder.put("pendingcount", pendingcount);
 		} else if (lSlogilabprotocoldetail.getOrderflag().equals("R")) {
 			int completedcount = LSlogilabprotocoldetailRepository
-					.countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-							lSlogilabprotocoldetail.getProtocoltype(), "R", lSlogilabprotocoldetail.getFromdate(),
-							lSlogilabprotocoldetail.getTodate());
+					.countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "R",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			List<LSlogilabprotocoldetail> lstCompletedOrder = LSlogilabprotocoldetailRepository
-					.findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "R", lSlogilabprotocoldetail.getFromdate(),
-							lSlogilabprotocoldetail.getTodate());
+					.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "R",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			lstOrder.put("lstCompletedOrder", lstCompletedOrder);
 			lstOrder.put("completedcount", completedcount);
 		} else if (lSlogilabprotocoldetail.getOrderflag().equals("M")) {
 			int completedcount = (int) LSlogilabprotocoldetailRepository
-					.countByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getAssignedto(),
-							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.countByProtocoltypeAndSitecodeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getAssignedto(), lSlogilabprotocoldetail.getFromdate(),
+							lSlogilabprotocoldetail.getTodate());
 
 			List<LSlogilabprotocoldetail> lstCompletedOrder = LSlogilabprotocoldetailRepository
-					.findTop10ByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getAssignedto(),
-							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndAssignedtoAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getAssignedto(), lSlogilabprotocoldetail.getFromdate(),
+							lSlogilabprotocoldetail.getTodate());
 
 			lstOrder.put("lstMyOrder", lstCompletedOrder);
 			lstOrder.put("myordercount", completedcount);
 		} else if (lSlogilabprotocoldetail.getOrderflag().equals("A")) {
 			int completedcount = (int) LSlogilabprotocoldetailRepository
-					.countByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getLsuserMaster(),
-							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.countByProtocoltypeAndSitecodeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getLsuserMaster(), lSlogilabprotocoldetail.getFromdate(),
+							lSlogilabprotocoldetail.getTodate());
 
 //			List<LSlogilabprotocoldetail> lstCompletedOrder = LSlogilabprotocoldetailRepository
 //					.findTop10ByOrderflagAndLsuserMasterAndAssignedtoNotAndCreatedtimestampBetweenOrderByCreatedtimestampDesc("N",
@@ -2630,9 +2675,10 @@ public class ProtocolService {
 //							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 			List<LSlogilabprotocoldetail> lstCompletedOrder = LSlogilabprotocoldetailRepository
-					.findTop10ByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-							lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getLsuserMaster(),
-							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.findTop10ByProtocoltypeAndSitecodeAndOrderflagAndLsuserMasterAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getLsuserMaster(), lSlogilabprotocoldetail.getFromdate(),
+							lSlogilabprotocoldetail.getTodate());
 
 			lstOrder.put("lstAssignedOrder", lstCompletedOrder);
 			lstOrder.put("assignedordercount", completedcount);
@@ -2686,8 +2732,9 @@ public class ProtocolService {
 					.findByLsprotocolworkflowgroupmapInOrderByWorkflowcodeDesc(lsworkflowgroupmapping);
 
 			lstreminingPendingOrder = LSlogilabprotocoldetailRepository
-					.getProtocoltypeAndOrderflagAndCreatedtimestampBetween(lSlogilabprotocoldetail.getProtocoltype(),
-							"N", lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 //			lstreminingPendingOrder.forEach(objorder -> objorder
 //					.setCanuserprocess(lsprotocolworkflow.equals(objorder.getlSprotocolworkflow()) ? true : false));
@@ -2717,13 +2764,15 @@ public class ProtocolService {
 			});
 		} else if (LSuserteammapping != null && LSuserteammapping.size() > 0) {
 			lstreminingPendingOrder = LSlogilabprotocoldetailRepository
-					.getProtocoltypeAndOrderflagAndCreatedtimestampBetween(lSlogilabprotocoldetail.getProtocoltype(),
-							"N", lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			lstreminingPendingOrder.forEach(objorder -> objorder.setCanuserprocess(false));
 		}
 
 		List<LSlogilabprotocoldetail> lstreminingCompletedOrder = LSlogilabprotocoldetailRepository
-				.getProtocoltypeAndOrderflagAndCreatedtimestampBetween(lSlogilabprotocoldetail.getProtocoltype(), "R",
+				.getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+						lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "R",
 						lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 		lstOrder.put("lstreminingPendingOrder", lstreminingPendingOrder);
@@ -2755,9 +2804,9 @@ public class ProtocolService {
 						.findByLsprotocolworkflowgroupmapInOrderByWorkflowcodeDesc(lsworkflowgroupmapping);
 
 				lstreminingPendingOrder = LSlogilabprotocoldetailRepository
-						.getProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-								lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-								lSlogilabprotocoldetail.getTodate());
+						.getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+								lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+								lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 //				lstreminingPendingOrder.forEach(objorder -> objorder
 //						.setCanuserprocess(lsprotocolworkflow.equals(objorder.getlSprotocolworkflow()) ? true : false));
@@ -2788,9 +2837,9 @@ public class ProtocolService {
 
 			} else if (LSuserteammapping != null && LSuserteammapping.size() > 0) {
 				lstreminingPendingOrder = LSlogilabprotocoldetailRepository
-						.getProtocoltypeAndOrderflagAndCreatedtimestampBetween(
-								lSlogilabprotocoldetail.getProtocoltype(), "N", lSlogilabprotocoldetail.getFromdate(),
-								lSlogilabprotocoldetail.getTodate());
+						.getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+								lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "N",
+								lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 
 				lstreminingPendingOrder.forEach(objorder -> objorder.setCanuserprocess(false));
 			}
@@ -2798,8 +2847,9 @@ public class ProtocolService {
 			lstOrder.put("lstreminingPendingOrder", lstreminingPendingOrder);
 		} else if (lSlogilabprotocoldetail.getOrderflag().equals("R")) {
 			List<LSlogilabprotocoldetail> lstreminingCompletedOrder = LSlogilabprotocoldetailRepository
-					.getProtocoltypeAndOrderflagAndCreatedtimestampBetween(lSlogilabprotocoldetail.getProtocoltype(),
-							"R", lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
+					.getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(
+							lSlogilabprotocoldetail.getProtocoltype(), lSlogilabprotocoldetail.getSitecode(), "R",
+							lSlogilabprotocoldetail.getFromdate(), lSlogilabprotocoldetail.getTodate());
 			lstOrder.put("lstreminingCompletedOrder", lstreminingCompletedOrder);
 		}
 		return lstOrder;
@@ -3788,7 +3838,7 @@ public class ProtocolService {
 					LSprotocolstepObj.setLsprotocolstepInformation(str);
 					LSProtocolStepRepositoryObj.save(LSprotocolstepObj);
 					LSprotocolstepObj.setIsmultitenant(ismultitenant);
-					
+
 					LSprotocolstepObj.setNewStep(NewStep);
 					mapObj.put("curentprotocolstep", LSprotocolstepObj);
 					if (ismultitenant == 1) {
@@ -3827,7 +3877,7 @@ public class ProtocolService {
 						LSprotocolstepObj.setLsprotocolstepInformation(str);
 					}
 					LSProtocolStepRepositoryObj.save(LSprotocolstepObj);
-				
+
 					LSprotocolstepObj.setNewStep(NewStep);
 					LSprotocolstepObj.setIsmultitenant(ismultitenant);
 					mapObj.put("curentprotocolstep", LSprotocolstepObj);
@@ -5044,10 +5094,8 @@ public class ProtocolService {
 	}
 
 	public List<LStestmasterlocal> gettaskmaster() {
-		List<LStestmasterlocal>LStestmasterlocal =lstestmasterlocalRepository.findAll();
+		List<LStestmasterlocal> LStestmasterlocal = lstestmasterlocalRepository.findAll();
 		return LStestmasterlocal;
 	}
-
-
 
 }

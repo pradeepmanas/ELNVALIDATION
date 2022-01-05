@@ -38,15 +38,15 @@ public interface LSlogilabprotocoldetailRepository extends JpaRepository<LSlogil
 	 * @return
 	 */
 	
-	List<Logilabprotocolorders> findByCreatedtimestampBetween(Date fromdate, Date todate);
+//	List<Logilabprotocolorders> findByCreatedtimestampBetween(Date fromdate, Date todate);
 
 	List<Logilabprotocolorders> findByProtocoltype(Integer protocotype);
 	
 	long countByOrderflag(String orderflg);
 	
-	long countByOrderflagAndCreatedtimestampBetween(String orderflg, Date fromdate, Date todate);
+//	long countByOrderflagAndCreatedtimestampBetween(String orderflg, Date fromdate, Date todate);
 	
-	long countByCreatedtimestampBetween(Date fromdate, Date todate);
+//	long countByCreatedtimestampBetween(Date fromdate, Date todate);
 //	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagOrderByCreatedtimestampDesc(Integer protocoltype,
 //			String string);
 	int countByProtocoltypeAndOrderflag(Integer protocoltype, String string);
@@ -61,8 +61,8 @@ public interface LSlogilabprotocoldetailRepository extends JpaRepository<LSlogil
 	@Transactional
 	@Modifying
 	@Query(value = "select * from "
-			+ "LSlogilabprotocoldetail where protocoltype = ?1 and orderflag = ?2 and createdtimestamp BETWEEN ?3 and ?4  ORDER BY createdtimestamp DESC offset 10 row", nativeQuery = true)
-	List<LSlogilabprotocoldetail> getProtocoltypeAndOrderflagAndCreatedtimestampBetween(Integer protocoltype, String string,Date fromdate, Date todate);
+			+ "LSlogilabprotocoldetail where protocoltype = ?1 and sitecode=?2 and orderflag = ?3 and createdtimestamp BETWEEN ?4 and ?5  ORDER BY createdtimestamp DESC offset 10 row", nativeQuery = true)
+	List<LSlogilabprotocoldetail> getProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(Integer protocoltype, Integer sitecode, String string,Date fromdate, Date todate);
 
 	@Transactional
 	@Modifying
@@ -99,18 +99,18 @@ public interface LSlogilabprotocoldetailRepository extends JpaRepository<LSlogil
 	public List<LSlogilabprotocoldetail> findByLsprojectmasterOrderByProtocolordercodeDesc(LSprojectmaster lsproject);
 
 
-	List<Logilabprotocolorders> findByOrderflagAndCreatedtimestampBetween(String string, Date fromdate, Date todate);
+//	List<Logilabprotocolorders> findByOrderflagAndCreatedtimestampBetween(String string, Date fromdate, Date todate);
 
 
-	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-			Integer protocoltype, String string, Date fromdate, Date todate);
+//	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+//			Integer protocoltype, String string, Date fromdate, Date todate);
 
 
-	int countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(Integer protocoltype, String string, Date fromdate,
-			Date todate);
+//	int countByProtocoltypeAndOrderflagAndCreatedtimestampBetween(Integer protocoltype, String string, Date fromdate,
+//			Date todate);
 
-	int countByOrderflagAndCreatedtimestampBetween(Integer protocoltype, String string, Date fromdate,
-			Date todate);
+//	int countByOrderflagAndCreatedtimestampBetween(Integer protocoltype, String string, Date fromdate,
+//			Date todate);
 
 	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndLSprotocolworkflowAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
 			Integer protocoltype, String string, LSprotocolworkflow lsprotocolworkflow, Date fromdate, Date todate);
@@ -147,27 +147,70 @@ public interface LSlogilabprotocoldetailRepository extends JpaRepository<LSlogil
 //			Date fromdate, Date todate);
 
 
-	List<LSlogilabprotocoldetail> findByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-			Integer protocoltype, String string, Date fromdate, Date todate);
+//	List<LSlogilabprotocoldetail> findByProtocoltypeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+//			Integer protocoltype, String string, Date fromdate, Date todate);
 
 
-	int countByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(Integer protocoltype, String string,
-			LSuserMaster assignedto, Date fromdate, Date todate);
+//	int countByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(Integer protocoltype, String string,
+//			LSuserMaster assignedto, Date fromdate, Date todate);
 
 
-	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-			Integer protocoltype, String string, LSuserMaster assignedto, Date fromdate, Date todate);
+//	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndAssignedtoAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+//			Integer protocoltype, String string, LSuserMaster assignedto, Date fromdate, Date todate);
 
 
-	int countByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(Integer protocoltype, String string,
-			LSuserMaster lsuserMaster, Date fromdate, Date todate);
+//	int countByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(Integer protocoltype, String string,
+//			LSuserMaster lsuserMaster, Date fromdate, Date todate);
 
 
-	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
-			Integer protocoltype, String string, LSuserMaster lsuserMaster, Date fromdate, Date todate);
+//	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndOrderflagAndLsuserMasterAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+//			Integer protocoltype, String string, LSuserMaster lsuserMaster, Date fromdate, Date todate);
 
 
 	LSlogilabprotocoldetail findByProtocolordercode(Long protocolordercode);
+
+
+	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+			Integer protocoltype, Integer sitecode, String string, Date fromdate, Date todate);
+
+
+	int countByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetween(Integer protocoltype, Integer sitecode,
+			String string, Date fromdate, Date todate);
+
+
+	int countByProtocoltypeAndSitecodeAndOrderflagAndAssignedtoAndCreatedtimestampBetween(Integer protocoltype,
+			Integer sitecode, String string, LSuserMaster assignedto, Date fromdate, Date todate);
+
+
+	int countByProtocoltypeAndSitecodeAndOrderflagAndLsuserMasterAndCreatedtimestampBetween(Integer protocoltype,
+			Integer sitecode, String string, LSuserMaster lsuserMaster, Date fromdate, Date todate);
+
+
+	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndSitecodeAndOrderflagAndAssignedtoAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+			Integer protocoltype, Integer sitecode, String string, LSuserMaster assignedto, Date fromdate, Date todate);
+
+
+	List<LSlogilabprotocoldetail> findTop10ByProtocoltypeAndSitecodeAndOrderflagAndLsuserMasterAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+			Integer protocoltype, Integer sitecode, String string, LSuserMaster lsuserMaster, Date fromdate,
+			Date todate);
+
+
+	List<LSlogilabprotocoldetail> findByProtocoltypeAndSitecodeAndOrderflagAndCreatedtimestampBetweenOrderByCreatedtimestampDesc(
+			Integer protocoltype, Integer sitecode, String string, Date fromdate, Date todate);
+
+
+	List<Logilabprotocolorders> findBySitecodeAndCreatedtimestampBetween(Integer sitecode, Date fromdate, Date todate);
+
+
+	List<Logilabprotocolorders> findByOrderflagAndSitecodeAndCreatedtimestampBetween(String string, Integer sitecode,
+			Date fromdate, Date todate);
+
+
+	Object countBySitecodeAndCreatedtimestampBetween(Integer sitecode, Date fromdate, Date todate);
+
+
+	Object countByOrderflagAndSitecodeAndCreatedtimestampBetween(String string, Integer sitecode, Date fromdate,
+			Date todate);
 
 
 
