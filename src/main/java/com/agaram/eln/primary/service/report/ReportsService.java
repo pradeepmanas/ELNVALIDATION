@@ -212,7 +212,7 @@ public class ReportsService {
 //		LSConfiguration objLSConfiguration = ObjConfigurationService.getConfigurationForDocsPath();
 		String filePath = "";
 		if (filePath == "") {
-			if (System.getProperty("os.name").contains("Linux")) {
+			if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 				System.out.print("reportgetAbsolutePath()" + new File("").getAbsolutePath().toString());
 				logger.info("reportgetAbsolutePath()" + new File("").getAbsolutePath().toString());
 				filePath = "/home/site/wwwroot/webapps/ELNdocuments";
@@ -386,6 +386,7 @@ public class ReportsService {
 		HttpURLConnection connection = null;
 		try {
 			try {
+				statusMsg = "reach 2";
 				if (downloadUri.contains("https")) {
 					SSLContext sc = SSLContext.getInstance("SSL");
 					sc.init(null, trustAllCerts, new java.security.SecureRandom());
@@ -439,29 +440,30 @@ public class ReportsService {
 				String fileContent = new BufferedReader(new InputStreamReader(stream)).lines()
 						.collect(Collectors.joining("\n"));
 				logger.info(fileContent);
-				if (fileContent.equals("working")) {
+				if (fileContent.contains("working")||fileContent.contains("WORKING")) {
 					status = true;
 					String filePath = "";
-//					if (System.getProperty("os.name") == "Linux") {
-//						filePath = new File("").getAbsolutePath();
-//					} else {
+					if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
+						filePath = new File("").getAbsolutePath();
+					} else {
 						filePath = getDocxAbsolutePath() + "/link.txt";
-//					}
+					}
 					File linkFile = new File(filePath);
 					if (linkFile.exists()) {
-						fileContent = new BufferedReader(new InputStreamReader(new FileInputStream(linkFile))).lines()
-								.collect(Collectors.joining("\n"));
-						if (fileContent.equals("working")) {
+//						fileContent = new BufferedReader(new InputStreamReader(new FileInputStream(linkFile))).lines()
+//								.collect(Collectors.joining("\n"));
+//						
+//						
+//						if (fileContent.contains("working")||fileContent.contains("WORKING")) {
 							status = true;
-						} else {
-							status = false;
-							System.out.print("report service ID_DOCXSURLNOTFOUND 458");
-							statusMsg = "ID_DOCXSURLNOTFOUND";
-						}
+//						} else {
+//							status = false;
+//							System.out.print("report service ID_DOCXSURLNOTFOUND 458");
+//							statusMsg = "ID_DOCXSURLNOTFOUND 2";
+//						}
 					} else {
 						status = false;
 						System.out.print("report service ID_DOCXSURLNOTFOUND 463");
-						statusMsg = "ID_DOCXSURLNOTFOUND";
 					}
 				} else {
 					String FIlePath = getDocxAbsolutePath();
@@ -480,7 +482,6 @@ public class ReportsService {
 								logger.info(e.getLocalizedMessage());
 								status = false;
 								System.out.print("report service ID_DOCXSURLNOTFOUND 482");
-								statusMsg = "ID_DOCXSURLNOTFOUND";
 							}
 							if (status) {
 								fileContent = new BufferedReader(new InputStreamReader(stream)).lines()
@@ -491,7 +492,6 @@ public class ReportsService {
 								} else {
 									status = false;
 									System.out.print("report service ID_DOCXSURLNOTFOUND 493");
-									statusMsg = "ID_DOCXSURLNOTFOUND";
 								}
 							}
 						}
@@ -500,11 +500,13 @@ public class ReportsService {
 					}
 				}
 			}
+			
 			if (downloadUri.contains("https")) {
 				connectionSSL.disconnect();
 			} else {
 				connection.disconnect();
 			}
+			statusMsg = "reach 9";
 		} catch (NoSuchAlgorithmException | KeyManagementException | IOException e) {
 			logger.error(e.getLocalizedMessage());
 			status = false;
@@ -512,7 +514,8 @@ public class ReportsService {
 				statusMsg = "ID_DOCXSAPINOTFOUND";
 			} else if (FileType.equals("url")) {
 				System.out.print("report service ID_DOCXSURLNOTFOUND 509");
-				statusMsg = "ID_DOCXSURLNOTFOUND";
+//				statusMsg = "ID_DOCXSURLNOTFOUND 6";
+//				statusMsg= e.getLocalizedMessage();
 			}
 		}
 		rtnObj.put("status", status);
@@ -621,7 +624,7 @@ public class ReportsService {
 				}
 			}
 			if (docType == 1) {
-				if (System.getProperty("os.name").contains("Linux")) {
+				if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 					filePath += "/templates";
 				} else {
 					filePath += "\\templates";
@@ -764,7 +767,7 @@ public class ReportsService {
 				LSdocreports LSDocReportsObj = LSdocreportsRepositoryObj.findFirstByFileHashNameAndStatus(sKey, 1);
 				if (LSDocReportsObj != null) {
 					if (LSDocReportsObj.getIsTemplate() == 1) {
-						if (System.getProperty("os.name").contains("Linux")) {
+						if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 							filePath += "/templates";
 						} else {
 							filePath += "\\templates";
@@ -985,7 +988,7 @@ public class ReportsService {
 				LSdocreports LSDocReportsObj = LSdocreportsRepositoryObj.findFirstByFileHashNameAndStatus(sKey, 1);
 				if (LSDocReportsObj != null) {
 					if (LSDocReportsObj.getIsTemplate() == 1) {
-						if (System.getProperty("os.name").contains("Linux")) {
+						if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 							filePath += "/templates";
 						} else {
 							filePath += "\\templates";
@@ -1310,7 +1313,7 @@ public class ReportsService {
 						LSDocReportObj.setFileHashName(saveAsHashKey);
 						LSdocreportsRepositoryObj.save(LSDocReportObj);
 						if (LSDocReportObj.getIsTemplate() == 1) {
-							if (System.getProperty("os.name").contains("Linux")) {
+							if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 								filePath += "/templates";
 							} else {
 								filePath += "\\templates";
@@ -1703,7 +1706,7 @@ public class ReportsService {
 //			if (canLoad) {
 			String filePath = getDocxAbsolutePath();
 			if (lSdocreportsObj.getIsTemplate() == 1 && !isftpAvailable()) {
-				if (System.getProperty("os.name").contains("Linux")) {
+				if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 					filePath += "/templates";
 				} else {
 					filePath += "\\templates";
@@ -1794,7 +1797,7 @@ public class ReportsService {
 //			if (canLoad) {
 			String filePath = getDocxAbsolutePath();
 			if (lSdocreportsObj.getIsTemplate() == 1 && !isftpAvailable()) {
-				if (System.getProperty("os.name").contains("Linux")) {
+				if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 					filePath += "/templates";
 				} else {
 					filePath += "\\templates";
@@ -2180,7 +2183,7 @@ public class ReportsService {
 				}
 				logger.info("handleOrderandTemplate() fileName: " + fileName);
 				String path = filePath + "\\templates";
-				if (System.getProperty("os.name").contains("Linux")) {
+				if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 					path = filePath + "/templates";
 				}
 
@@ -3589,7 +3592,7 @@ public class ReportsService {
 			FIleVersionName = hashKey;
 		}
 		if (LSdocreportsObj.getIsTemplate() == 1) {
-			if (System.getProperty("os.name").contains("Linux")) {
+			if (System.getProperty("os.name").contains("Linux") || System.getProperty("os.name").contains("LINUX")) {
 				filePath += "/templates";
 			} else {
 				filePath += "\\templates";
