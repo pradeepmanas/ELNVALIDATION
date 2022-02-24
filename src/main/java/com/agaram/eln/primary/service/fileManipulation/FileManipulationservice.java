@@ -18,6 +18,7 @@ import com.agaram.eln.primary.model.fileManipulation.OrderAttachment;
 import com.agaram.eln.primary.model.fileManipulation.ProfilePicture;
 import com.agaram.eln.primary.model.fileManipulation.ResultorderlimsRefrence;
 import com.agaram.eln.primary.model.fileManipulation.SheetorderlimsRefrence;
+import com.agaram.eln.primary.model.fileManipulation.UserSignature;
 import com.agaram.eln.primary.model.instrumentDetails.LsOrderattachments;
 import com.agaram.eln.primary.model.instrumentDetails.LsResultlimsOrderrefrence;
 import com.agaram.eln.primary.model.instrumentDetails.LsSheetorderlimsrefrence;
@@ -27,6 +28,7 @@ import com.agaram.eln.primary.repository.fileManipulation.OrderAttachmentReposit
 import com.agaram.eln.primary.repository.fileManipulation.ProfilePictureRepository;
 import com.agaram.eln.primary.repository.fileManipulation.ResultorderlimsRefrenceRepository;
 import com.agaram.eln.primary.repository.fileManipulation.SheetorderlimsRefrenceRepository;
+import com.agaram.eln.primary.repository.fileManipulation.UserSignatureRepository;
 import com.agaram.eln.primary.repository.usermanagement.LSuserMasterRepository;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -54,6 +56,9 @@ public class FileManipulationservice {
 	
 	@Autowired
 	private ResultorderlimsRefrenceRepository ResultorderlimsRefrenceRepository;
+	
+	@Autowired
+	private UserSignatureRepository UserSignatureRepository;
 
 	public ProfilePicture addPhoto(Integer usercode, MultipartFile file, Date currentdate) throws IOException {
 
@@ -80,11 +85,53 @@ public class FileManipulationservice {
 		return profile;
 	}
 
+	
+	@SuppressWarnings("unused")
+	public UserSignature addsignature(Integer usercode, MultipartFile file, Date currentdate) throws IOException {
+
+		LSuserMaster username = lsuserMasterRepository.findByusercode(usercode);
+		String name = username.getUsername();
+		LScfttransaction list = new LScfttransaction();
+		list.setModuleName("UserManagement");
+		//list.setComments(name + " " + "Uploaded the profile picture successfully");
+		list.setActions("View / Load");
+		list.setSystemcoments("System Generated");
+		list.setTableName("profile");
+		list.setTransactiondate(currentdate);
+//	    	list.setLsuserMaster(lsuserMasterRepository.findByusercode(usercode));
+		list.setLsuserMaster(usercode);
+		lscfttransactionRepository.save(list);
+		deleteSignature(usercode, list);
+
+		UserSignature Signature = new UserSignature();
+		Signature.setId(usercode);
+		Signature.setName(file.getName());
+		Signature.setImage(new Binary(BsonBinarySubType.BINARY, file.getBytes()));
+		Signature = UserSignatureRepository.insert(Signature);
+
+		return Signature;
+	}
+	
+	
+	public Long deleteSignature(Integer id, LScfttransaction list) {
+		list.setTableName("UserSignature");
+		lscfttransactionRepository.save(list);
+		return UserSignatureRepository.deleteById(id);
+	}
+
+
 	public ProfilePicture getPhoto(Integer id) {
 
 		return profilePictureRepository.findById(id);
 	}
 
+	
+	public UserSignature getSignature(Integer id) { 
+		   
+        return UserSignatureRepository.findById(id); 
+    }
+	
+	
 	public Long deletePhoto(Integer id, LScfttransaction list) {
 		list.setTableName("ProfilePicture");
 		lscfttransactionRepository.save(list);
@@ -178,5 +225,11 @@ public class FileManipulationservice {
 		ResultorderlimsRefrence objfile = ResultorderlimsRefrenceRepository.findById(objattachment.getFileid());
 
 		return objfile;
+	}
+
+
+	public UserSignature getsignature(Integer id) {
+
+		return UserSignatureRepository.findById(id);
 	}
 }

@@ -106,6 +106,9 @@ public class LSlogilablimsorderdetail {
 	@JoinColumn(name="batchcode")
 	private List<LsOrderattachments> lsOrderattachments;
 	
+	@Column(columnDefinition = "varchar(250)",name = "Keyword") 
+	private String keyword;
+	
 	@Transient
 	LScfttransaction objmanualaudit;
 	
@@ -659,6 +662,12 @@ public class LSlogilablimsorderdetail {
 	}
 	public void setIsmultitenant(Integer ismultitenant) {
 		this.ismultitenant = ismultitenant;
+	}
+	public String getKeyword() {
+		return keyword;
+	}
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 
 	
