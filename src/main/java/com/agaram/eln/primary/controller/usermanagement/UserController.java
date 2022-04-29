@@ -583,5 +583,18 @@ public class UserController {
 	{
 		return userService.getGroupedcolumn(objgroupped);
 	}
+	
+	@PostMapping("/CloudUploadprofilepic")
+    public CloudProfilePicture CloudUploadprofilepic(@RequestParam("file") MultipartFile file, @RequestParam("usercode") Integer usercode, @RequestParam("date") Date currentdate) {
+        
+		CloudProfilePicture profilePicture = new CloudProfilePicture();
+        try {
+        	profilePicture = cloudFileManipulationservice.addPhoto(usercode, file,currentdate);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return profilePicture;
+    }
 }
 

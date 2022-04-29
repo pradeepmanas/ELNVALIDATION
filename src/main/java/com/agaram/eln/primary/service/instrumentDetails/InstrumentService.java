@@ -1955,7 +1955,11 @@ public class InstrumentService {
 	public void updateorderversioncontent(String Content, LSsamplefileversion objfile, Integer ismultitenant) {
 		if (ismultitenant == 1) {
 			CloudOrderVersion objsavefile = new CloudOrderVersion();
+			if(objfile.getFilesamplecodeversion() != null) {
 			objsavefile.setId((long) objfile.getFilesamplecodeversion());
+			}else {
+				objsavefile.setId(1);
+			}
 			objsavefile.setContent(Content);
 
 			cloudOrderVersionRepository.save(objsavefile);
@@ -3480,6 +3484,16 @@ public class InstrumentService {
 		mapObj.put("elnSheet", objattachment);
 
 		return mapObj;
+	}
+
+	public List<LSsamplefileversion> getlsorderfileversion(LSsamplefile objfile) {
+		List<LSsamplefileversion> objList = new ArrayList<LSsamplefileversion>();
+		if(objfile.getFilesamplecode()!=null) {
+			
+			objList = lssamplefileversionRepository.findByFilesamplecodeOrderByVersionnoDesc(objfile);
+			
+		}
+		return objList;
 	}
 
 }

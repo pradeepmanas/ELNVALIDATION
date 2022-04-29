@@ -801,5 +801,10 @@ public class InstrumentController {
 			@RequestParam("order") Long batchcode, @RequestParam("filename") String filename) throws IOException {
 		return instrumentService.UploadLimsResultFile(file, batchcode, filename);
 	}
+	
+	@PostMapping("/getlsorderfileversion")
+	public List<LSsamplefileversion> getlsorderfileversion(@RequestBody LSsamplefile objfile) {
+		return instrumentService.getlsorderfileversion(objfile);
+	}
 
 }

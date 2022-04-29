@@ -651,6 +651,16 @@ public class UserService {
 			objExitinguser.setObjResponse(new Response());
 
 			if (objuser.getIsmultitenant() == 1) {
+				
+				if(objuser.getLoggedfrom() != null && objuser.getLoggedfrom() == 1) {
+					
+					objExitinguser.getObjResponse().setInformation("Valid user");
+					objExitinguser.getObjResponse().setStatus(true);
+					return objExitinguser;
+				}
+				
+				
+				if (Password.equals(objuser.getsPassword())) {
 				objExitinguser.getObjResponse().setStatus(true);
 
 				LScfttransaction manualAudit = new LScfttransaction();
@@ -666,6 +676,10 @@ public class UserService {
 				manualAudit.setLssitemaster(objExitinguser.getLssitemaster().getSitecode());
 				manualAudit.setTransactiondate(date);
 				lscfttransactionRepository.save(manualAudit);
+				}else {
+					objExitinguser.getObjResponse().setInformation("Invalid password");
+					objExitinguser.getObjResponse().setStatus(false);
+				}
 			} else {
 				if (Password.equals(objuser.getsPassword())) {
 					objExitinguser.getObjResponse().setStatus(true);
