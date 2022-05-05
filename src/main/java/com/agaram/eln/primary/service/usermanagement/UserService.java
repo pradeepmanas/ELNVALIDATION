@@ -664,17 +664,17 @@ public class UserService {
 				objExitinguser.getObjResponse().setStatus(true);
 
 				LScfttransaction manualAudit = new LScfttransaction();
-				Date date = new Date();
+//				Date date = new Date();
 
 				manualAudit.setModuleName("Register Task Orders & Execute");
 				manualAudit.setComments(objuser.getsComments());
-				manualAudit.setActions("E-Signature");
+				manualAudit.setActions("view");
 				manualAudit.setSystemcoments("User Generated");
-				manualAudit.setTableName("E-Signature");
-				manualAudit.setManipulatetype("E-Signature");
+				manualAudit.setTableName("Lsusermaster");
+				manualAudit.setManipulatetype("view");
 				manualAudit.setLsuserMaster(objExitinguser.getUsercode());
 				manualAudit.setLssitemaster(objExitinguser.getLssitemaster().getSitecode());
-				manualAudit.setTransactiondate(date);
+				manualAudit.setTransactiondate(objuser.getLogindate());
 				lscfttransactionRepository.save(manualAudit);
 				}else {
 					objExitinguser.getObjResponse().setInformation("Invalid password");
@@ -685,17 +685,17 @@ public class UserService {
 					objExitinguser.getObjResponse().setStatus(true);
 
 					LScfttransaction manualAudit = new LScfttransaction();
-					Date date = new Date();
+//					Date date = new Date();
 
 					manualAudit.setModuleName("Register Task Orders & Execute");
 					manualAudit.setComments(objuser.getsComments());
-					manualAudit.setActions("E-Signature");
+					manualAudit.setActions("view");
 					manualAudit.setSystemcoments("User Generated");
-					manualAudit.setTableName("E-Signature");
-					manualAudit.setManipulatetype("E-Signature");
+					manualAudit.setTableName("Lsusermaster");
+					manualAudit.setManipulatetype("view");
 					manualAudit.setLsuserMaster(objExitinguser.getUsercode());
 					manualAudit.setLssitemaster(objExitinguser.getLssitemaster().getSitecode());
-					manualAudit.setTransactiondate(date);
+					manualAudit.setTransactiondate(objuser.getLogindate());
 					lscfttransactionRepository.save(manualAudit);
 				} else {
 					objExitinguser.getObjResponse().setInformation("Invalid password");

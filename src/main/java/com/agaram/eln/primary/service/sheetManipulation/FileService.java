@@ -252,7 +252,7 @@ public class FileService {
 		objfile.getResponse().setStatus(true);
 		objfile.getResponse().setInformation("ID_SHEETMSG");
 
-		updatenotificationforsheet(objfile, true, null);
+		updatenotificationforsheet(objfile, true, null,objfile.getIsnewsheet());
 
 		return objfile;
 	}
@@ -594,12 +594,12 @@ public class FileService {
 					.get(objfile.getLssheetworkflowhistory().size() - 1).getObjsilentaudit());
 		}
 
-		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow());
+		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow(),false);
 
 		return objfile;
 	}
 
-	public void updatenotificationforsheet(LSfile objFile, Boolean isNew, LSsheetworkflow previousworkflow) {
+	public void updatenotificationforsheet(LSfile objFile, Boolean isNew, LSsheetworkflow previousworkflow,Boolean IsNewsheet) {
 		try {
 			List<LSuserteammapping> objteam = lsuserteammappingRepository
 					.findByTeamcodeNotNullAndLsuserMaster(objFile.getLSuserMaster());
@@ -655,7 +655,7 @@ public class FileService {
 						}
 					}
 				} else {
-					Notifiction = "SHEETCREATED";
+					Notifiction =IsNewsheet == true ?"SHEETCREATED":"SHEETMODIFIED";
 					Details = "{\"ordercode\":\"" + objFile.getFilecode() + "\", \"order\":\""
 							+ objFile.getFilenameuser() + "\", \"previousworkflow\":\"" + ""
 							+ "\", \"previousworkflowcode\":\"" + -1 + "\", \"currentworkflow\":\""
@@ -671,10 +671,17 @@ public class FileService {
 
 							if (objFile.getLSuserMaster().getUsercode() != lstusers.get(j).getLsuserMaster()
 									.getUsercode()) {
+							
+								
 								LSnotification objnotify = new LSnotification();
+								if(IsNewsheet) {
+									objnotify.setNotificationdate(objFile.getCreatedate());
+								}else{
+									objnotify.setNotificationdate(objFile.getModifieddate());
+								}
 								objnotify.setNotifationfrom(objFile.getLSuserMaster());
 								objnotify.setNotifationto(lstusers.get(j).getLsuserMaster());
-								objnotify.setNotificationdate(objFile.getCreatedate());
+								
 								objnotify.setNotification(Notifiction);
 								objnotify.setNotificationdetils(Details);
 								objnotify.setIsnewnotification(1);

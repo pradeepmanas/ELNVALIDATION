@@ -1985,6 +1985,7 @@ public class InstrumentService {
 		// objfile.setFilecontent(Content);
 	}
 
+	@SuppressWarnings("unused")
 	public LSsamplefile SaveResultfile(LSsamplefile objfile) {
 
 		Integer lastversionindex = objfile.getVersionno() != null ? objfile.getVersionno() - 1 : 0;
@@ -3068,6 +3069,7 @@ public class InstrumentService {
 
 	public Map<String, Object> Getinitialorders(LSlogilablimsorderdetail objorder) {
 		Map<String, Object> mapOrders = new HashMap<String, Object>();
+		if(objorder.getLsuserMaster() != null && objorder.getLsuserMaster().getUsername() !=null) {
 		if (objorder.getLsuserMaster().getUsername().trim().toLowerCase().equals("administrator")) {
 			mapOrders.put("orders", Getadministratororder(objorder));
 			mapOrders.put("ordercount", lslogilablimsorderdetailRepository.count());
@@ -3075,6 +3077,7 @@ public class InstrumentService {
 			mapOrders.put("orders", Getuserorder(objorder));
 			mapOrders.put("ordercount", lslogilablimsorderdetailRepository
 					.countByLsprojectmasterIn(objorder.getLsuserMaster().getLstproject()));
+		}
 		}
 
 		return mapOrders;
