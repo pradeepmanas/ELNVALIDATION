@@ -660,7 +660,7 @@ public class UserService {
 				}
 				
 				
-				if (Password.equals(objuser.getsPassword())) {
+				if (Password.equals(objuser.getsPassword()) && !objuser.getsComments().isEmpty()) {
 				objExitinguser.getObjResponse().setStatus(true);
 
 				LScfttransaction manualAudit = new LScfttransaction();
@@ -676,7 +676,11 @@ public class UserService {
 				manualAudit.setLssitemaster(objExitinguser.getLssitemaster().getSitecode());
 				manualAudit.setTransactiondate(objuser.getLogindate());
 				lscfttransactionRepository.save(manualAudit);
-				}else {
+				}else if(objuser.getsComments().isEmpty()) {
+					objExitinguser.getObjResponse().setInformation("IDS_INVALIDCOMMENTS");
+					objExitinguser.getObjResponse().setStatus(false);
+				}
+				else {
 					objExitinguser.getObjResponse().setInformation("Invalid password");
 					objExitinguser.getObjResponse().setStatus(false);
 				}
