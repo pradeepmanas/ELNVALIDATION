@@ -676,8 +676,10 @@ public class FileService {
 								LSnotification objnotify = new LSnotification();
 								if(IsNewsheet) {
 									objnotify.setNotificationdate(objFile.getCreatedate());
-								}else{
+								}else if(!IsNewsheet){
 									objnotify.setNotificationdate(objFile.getModifieddate());
+								}else {
+									objnotify.setNotificationdate(objFile.getCreatedate());
 								}
 								objnotify.setNotifationfrom(objFile.getLSuserMaster());
 								objnotify.setNotifationto(lstusers.get(j).getLsuserMaster());

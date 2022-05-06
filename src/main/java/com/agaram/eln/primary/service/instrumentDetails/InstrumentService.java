@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -1988,9 +1989,15 @@ public class InstrumentService {
 	@SuppressWarnings("unused")
 	public LSsamplefile SaveResultfile(LSsamplefile objfile) {
 
-		Integer lastversionindex = objfile.getVersionno() != null ? objfile.getVersionno() - 1 : 0;
+//		Integer lastversionindex = objfile.getVersionno() != null ? objfile.getVersionno() - 1 : 0;
 		
-//		Integer lastversionindex = objfile.getVersionno() != null ? objfile.getVersionno() : 0;
+		List<LSsamplefileversion> a = objfile.getLssamplefileversion();
+		Integer target = objfile.getVersionno();
+		
+		Integer lastversionindex = IntStream.range(0, a.size())
+                .filter(i -> target.equals(a.get(i).getVersionno()))
+                .findFirst()
+                .orElse(0); 
 
 		boolean versionexist = true;
 		if (objfile.getLssamplefileversion().size() <= 0) {
