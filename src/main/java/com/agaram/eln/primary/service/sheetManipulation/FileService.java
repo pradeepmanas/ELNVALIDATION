@@ -578,8 +578,11 @@ public class FileService {
 	}
 
 	public LSfile updateworkflowforFile(LSfile objfile) {
-
+		
 		LSfile objcurrentfile = lSfileRepository.findByfilecode(objfile.getFilecode());
+		
+		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow(),false);
+
 
 		lssheetworkflowhistoryRepository.save(objfile.getLssheetworkflowhistory());
 		lSfileRepository.updateFileWorkflow(objfile.getLssheetworkflow(), objfile.getApproved(), objfile.getRejected(),
@@ -594,8 +597,7 @@ public class FileService {
 					.get(objfile.getLssheetworkflowhistory().size() - 1).getObjsilentaudit());
 		}
 
-		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow(),false);
-
+	
 		return objfile;
 	}
 
@@ -642,9 +644,16 @@ public class FileService {
 							if (objFile.getObjLoggeduser().getUsercode() != lstusers.get(j).getLsuserMaster()
 									.getUsercode()) {
 								LSnotification objnotify = new LSnotification();
+								if(IsNewsheet) {
+									objnotify.setNotificationdate(objFile.getCreatedate());
+								}else if(!IsNewsheet){
+									objnotify.setNotificationdate(objFile.getModifieddate());
+								}else {
+									objnotify.setNotificationdate(objFile.getCreatedate());
+								}
 								objnotify.setNotifationfrom(objFile.getLSuserMaster());
 								objnotify.setNotifationto(lstusers.get(j).getLsuserMaster());
-								objnotify.setNotificationdate(objFile.getCreatedate());
+//								objnotify.setNotificationdate(objFile.getCreatedate());
 								objnotify.setNotification(Notifiction);
 								objnotify.setNotificationdetils(Details);
 								objnotify.setIsnewnotification(1);

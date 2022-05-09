@@ -167,6 +167,17 @@ public class LSlogilablimsorderdetail {
 	@Transient
 	private Integer rejected;
 	
+	
+	@Transient
+	@Temporal(TemporalType.TIMESTAMP)
+	Date modifidate;
+	
+	public Date getModifidate() {
+		return modifidate;
+	}
+	public void setModifidate(Date modifidate) {
+		this.modifidate = modifidate;
+	}
 	private Integer filecode;
 	
 	public Integer getRejected() {

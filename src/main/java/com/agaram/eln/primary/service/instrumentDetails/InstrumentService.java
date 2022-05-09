@@ -578,7 +578,8 @@ public class InstrumentService {
 						LSnotification objnotify = new LSnotification();
 						objnotify.setNotifationfrom(objorder.getLsuserMaster());
 						objnotify.setNotifationto(lstusers.get(i).getLsuserMaster());
-						objnotify.setNotificationdate(objorder.getCreatedtimestamp());
+//						objnotify.setNotificationdate(objorder.getCreatedtimestamp());
+						objnotify.setNotificationdate(objorder.getModifidate());
 						objnotify.setNotification(Notifiction);
 						objnotify.setNotificationdetils(Details);
 						objnotify.setIsnewnotification(1);
