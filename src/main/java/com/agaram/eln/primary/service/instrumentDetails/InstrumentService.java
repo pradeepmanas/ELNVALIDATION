@@ -561,7 +561,7 @@ public class InstrumentService {
 				int perviousworkflowcode = previousworkflow != null ? previousworkflow.getWorkflowcode() : -1;
 				String previousworkflowname = previousworkflow != null ? previousworkflow.getWorkflowname() : "";
 
-				if (previousworkflowname.equals(objorder.getLsworkflow().getWorkflowname())) {
+				if (previousworkflowname.equals(objorder.getLsworkflow().getWorkflowname())&&objorder.getApprovelstatus() == 1) {
 					Notifiction = "ORDERFINALAPPROVAL";
 				}
 
