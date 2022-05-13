@@ -308,7 +308,7 @@ public class InstrumentService {
 			obj.put("ParserField", ParserField);
 			obj.put("SubParserField", SubParserField);
 		} else {
-			List<LSfields> Generalfields = lSfieldsRepository.findBymethodname("ID_GENERAL");
+			List<LSfields> Generalfields = lSfieldsRepository.findByisactiveAndMethodname(1,"ID_GENERAL");
 
 			List<InstrumentMaster> InstrMaster = lsInstMasterRepository.findAll();
 			List<Method> elnMethod = lsMethodRepository.findAll();
@@ -469,6 +469,7 @@ public class InstrumentService {
 					&& objorder.getLsprojectmaster().getLsusersteam() != null) {
 				LSusersteam objteam = lsusersteamRepository
 						.findByteamcode(objorder.getLsprojectmaster().getLsusersteam().getTeamcode());
+				LSuserMaster obj =lsuserMasterRepository.findByusercode(objorder.getObjLoggeduser().getUsercode());
 				if (objteam.getLsuserteammapping() != null && objteam.getLsuserteammapping().size() > 0) {
 					String Details = "";
 					String Notifiction = "";
@@ -508,10 +509,11 @@ public class InstrumentService {
 						List<LSuserteammapping> lstusers = objteam.getLsuserteammapping();
 						List<LSnotification> lstnotifications = new ArrayList<LSnotification>();
 						for (int i = 0; i < lstusers.size(); i++) {
-							if (objorder.getLsuserMaster().getUsercode() != lstusers.get(i).getLsuserMaster()
+							if (objorder.getObjLoggeduser().getUsercode() != lstusers.get(i).getLsuserMaster()
 									.getUsercode()) {
 								LSnotification objnotify = new LSnotification();
-								objnotify.setNotifationfrom(objorder.getLsuserMaster());
+//								objnotify.setNotifationfrom(objorder.getLsuserMaster());
+								objnotify.setNotifationfrom(obj);
 								objnotify.setNotifationto(lstusers.get(i).getLsuserMaster());
 								objnotify.setNotificationdate(objorder.getCreatedtimestamp());
 								objnotify.setNotification(Notifiction);
@@ -546,6 +548,7 @@ public class InstrumentService {
 		try {
 			String Details = "";
 			String Notifiction = "";
+			LSuserMaster obj =lsuserMasterRepository.findByusercode(objorder.getObjLoggeduser().getUsercode());
 			if (objorder.getApprovelstatus() != null) {
 				LSusersteam objteam = lsusersteamRepository
 						.findByteamcode(objorder.getLsprojectmaster().getLsusersteam().getTeamcode());
@@ -576,7 +579,8 @@ public class InstrumentService {
 				for (int i = 0; i < lstusers.size(); i++) {
 					if (objorder.getObjLoggeduser().getUsercode() != lstusers.get(i).getLsuserMaster().getUsercode()) {
 						LSnotification objnotify = new LSnotification();
-						objnotify.setNotifationfrom(objorder.getLsuserMaster());
+//						objnotify.setNotifationfrom(objorder.getLsuserMaster());
+						objnotify.setNotifationfrom(obj);
 						objnotify.setNotifationto(lstusers.get(i).getLsuserMaster());
 //						objnotify.setNotificationdate(objorder.getCreatedtimestamp());
 						objnotify.setNotificationdate(objorder.getModifidate());
@@ -2258,6 +2262,7 @@ public class InstrumentService {
 				.findByBatchcodeOrderByAttachmentcodeDesc(objorder.getBatchcode());
 		objorder.setLsOrderattachments(lstattach);
 		lslogilablimsorderdetailRepository.save(objorder);
+	
 
 		if (objorder.getLssamplefile() != null) {
 			updateordercontent(Content, objorder.getLssamplefile(), objorder.getIsmultitenant());
