@@ -93,6 +93,12 @@ public class AuditTrailController {
 			throws ParseException {
 		return auditService.GetCFRTransactions(objCFRFilter);
 	}
+	
+	@PostMapping("/GetCFRTransactionsdid")
+	public List<LScfttransaction> GetCFRTransactionsdid(@RequestBody Map<String, Object> objCFRFilter)
+			throws ParseException {
+		return auditService.GetCFRTransactionsdid(objCFRFilter);
+	}
 
 	@PostMapping("/CheckUserPassWord")
 	public LSuserMaster CheckUserPassWord(@RequestBody LoggedUser objuser) {

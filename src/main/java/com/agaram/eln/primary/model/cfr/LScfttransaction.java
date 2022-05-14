@@ -75,6 +75,24 @@ public class LScfttransaction {
 	}
 	@Transient
 	private String username;
+	
+	@Transient
+	private Date fromdate;
+
+	public Date getFromdate() {
+		return fromdate;
+	}
+	public void setFromdate(Date fromdate) {
+		this.fromdate = fromdate;
+	}
+	public Date getTodate() {
+		return todate;
+	}
+	public void setTodate(Date todate) {
+		this.todate = todate;
+	}
+	@Transient
+	private Date todate;
 
 //	@ManyToOne 
 //	private LSreviewdetails LSreviewdetails;
