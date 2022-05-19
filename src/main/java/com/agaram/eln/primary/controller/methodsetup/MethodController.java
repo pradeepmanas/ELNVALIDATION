@@ -42,7 +42,7 @@ public class MethodController {
 	  * @return list of active methods for the specified Site.
 	  */
 	@PostMapping(value = "/getMethod")
-	public ResponseEntity<Object> getActiveMethodBySite(@Valid @RequestBody Map<String, Object> mapObject) {	
+	public ResponseEntity<Object> getActiveMethodBySite(@Valid @RequestBody Map<String, Object> mapObject)throws Exception {	
 		 final ObjectMapper mapper = new ObjectMapper();		
 		 final LSSiteMaster site = mapper.convertValue(mapObject.get("site"), LSSiteMaster.class);
 		 return methodService.getActiveMethodBySite(site);
@@ -58,7 +58,8 @@ public class MethodController {
 	   * @return response entity of Newly added Method entity
 	   */
 	  @PostMapping(value = "/createMethod")
-	  public ResponseEntity<Object> createMethod(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject) {
+	  public ResponseEntity<Object> createMethod(final HttpServletRequest request, 
+			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();		
 		  final Method method = mapper.convertValue(mapObject.get("methodmaster"), Method.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -77,7 +78,8 @@ public class MethodController {
 	   * @return response entity of updated Method entity
 	   */
 	  @PostMapping(value = "/updateMethod")
-	  public ResponseEntity<Object> updateMethod(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject) {
+	  public ResponseEntity<Object> updateMethod(final HttpServletRequest request, 
+			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();	
 		  final Method method = mapper.convertValue(mapObject.get("methodmaster"), Method.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -98,7 +100,8 @@ public class MethodController {
 	   * @return Response Entity relevant to delete Method entity
 	   */
 	  @PostMapping(value = "/updateMethodStatus")
-	  public ResponseEntity<Object> deleteMethod(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject) {
+	  public ResponseEntity<Object> deleteMethod(final HttpServletRequest request, 
+			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();	
 		 
 		  final int methodKey = mapper.convertValue(mapObject.get("methodkey"), Integer.class);
@@ -119,7 +122,7 @@ public class MethodController {
 	   * @return response entity with list of active instruments in the site
 	   */
 	  @PostMapping(value = "/getInstListToAssociateMethod")
-	  public ResponseEntity<Object> getInstListToAssociateMethod(@Valid @RequestBody Map<String, LSSiteMaster> siteObj) {
+	  public ResponseEntity<Object> getInstListToAssociateMethod(@Valid @RequestBody Map<String, LSSiteMaster> siteObj)throws Exception {
 		  return methodService.getInstListToAssociateMethod(siteObj.get("site"));
 	  }
 	  
@@ -129,7 +132,7 @@ public class MethodController {
 	   * @return byte array of txt file
 	   */
 	  @PostMapping(value = "/getFileData")
-	  public ResponseEntity<Object> getFileData(@Valid @RequestBody Map<String, Object> mapObject){
+	  public ResponseEntity<Object> getFileData(@Valid @RequestBody Map<String, Object> mapObject)throws Exception{
 		  final ObjectMapper mapper = new ObjectMapper();
 		  //final String fileName = mapper.convertValue(mapObject.get("rawDataFileName"), String.class);
 		  Map<String, Object> objinput = (Map<String, Object>) mapObject.get("inputData");
@@ -149,7 +152,7 @@ public class MethodController {
 	 */
 	@PostMapping(value = "/createCopyMethod")
 	public ResponseEntity<Object> createCopyMethod(final HttpServletRequest request, 
-				@Valid @RequestBody Map<String, Object> mapObject) {	
+				@Valid @RequestBody Map<String, Object> mapObject)throws Exception {	
 		 return methodService.createCopyMethod(request, mapObject);
 	}
 	
@@ -159,7 +162,7 @@ public class MethodController {
 	 * @return boolean value of validated response.
 	 */
 	@PostMapping(value = "/getMethodByInstrument")
-	public ResponseEntity<Object> getMethodByInstrument( @Valid @RequestBody Map<String, Object> mapObject) {
+	public ResponseEntity<Object> getMethodByInstrument( @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		 final ObjectMapper mapper = new ObjectMapper(); 
 		 final Method method= mapper.convertValue(mapObject.get("method"), Method.class);
 		 final int instMasterKey = (Integer) mapObject.get("instMasterKey");

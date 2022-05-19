@@ -53,7 +53,7 @@ public class EvaluateParserController {
 	 */
 	@PostMapping(value = "/evaluateParser")
 	public ResponseEntity<Object> evaluateParser(final HttpServletRequest request, 
-			@Valid @RequestBody Map<String, Object> mapObject){
+			@Valid @RequestBody Map<String, Object> mapObject)throws Exception{
 		final ObjectMapper mapper = new ObjectMapper();		 
 		final int methodKey = mapper.convertValue(mapObject.get("methodKey"), Integer.class);
 		final LSSiteMaster site = mapper.convertValue(mapObject.get("site"), LSSiteMaster.class);
@@ -65,7 +65,8 @@ public class EvaluateParserController {
 	}
 	
 	@PostMapping("/uploadFileandevaluateParser")
-    public ResponseEntity<Object> uploadFileandevaluateParser(@RequestParam("file") MultipartFile file, @RequestParam("method") String method, @RequestParam("site") String sitecode) {
+    public ResponseEntity<Object> uploadFileandevaluateParser(@RequestParam("file") MultipartFile file,
+    		@RequestParam("method") String method, @RequestParam("site") String sitecode)throws Exception {
         String fileName = fileStorageService.storeFile(file);
         
         final ObjectMapper mapper = new ObjectMapper();		 
@@ -84,7 +85,7 @@ public class EvaluateParserController {
 	   * @return response object with list of active methods based on the input criteria
 	   */
 	@PostMapping(value = "/getLabSheetMethodList")
-	public ResponseEntity<Object> getLabSheetMethodList(@Valid @RequestBody Map<String, Object> mapObject) {	
+	public ResponseEntity<Object> getLabSheetMethodList(@Valid @RequestBody Map<String, Object> mapObject)throws Exception {	
 		 final ObjectMapper mapper = new ObjectMapper();		
 		 final LSSiteMaster site = mapper.convertValue(mapObject.get("site"), LSSiteMaster.class);
 		 return parserService.getLabSheetMethodList(site);
@@ -97,7 +98,7 @@ public class EvaluateParserController {
 	 * @return response object with list of active fields that are to be listed in the specified method
 	 */
 	@PostMapping(value = "/getMethodFieldList")
-	public ResponseEntity<Object> getMethodFieldList(@Valid @RequestBody Map<String, Object> mapObject) {	
+	public ResponseEntity<Object> getMethodFieldList(@Valid @RequestBody Map<String, Object> mapObject)throws Exception {	
 		 final ObjectMapper mapper = new ObjectMapper();		
 		 final LSSiteMaster site = mapper.convertValue(mapObject.get("site"), LSSiteMaster.class);
 		 final Integer methodKey = mapper.convertValue(mapObject.get("methodKey"), Integer.class);

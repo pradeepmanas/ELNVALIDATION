@@ -64,23 +64,23 @@ public class InstrumentController {
 	private AuditService auditService;
 
 	@PostMapping("/GetInstrumentParameters")
-	public Map<String, Object> getInstrumentparameters(@RequestBody LSSiteMaster lssiteMaster) {
+	public Map<String, Object> getInstrumentparameters(@RequestBody LSSiteMaster lssiteMaster) throws Exception {
 		return instrumentService.getInstrumentparameters(lssiteMaster);
 	}
 
 	@PostMapping("/InsertELNOrder")
-	public LSlogilablimsorderdetail InsertELNOrder(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail InsertELNOrder(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 
 		return instrumentService.InsertELNOrder(objorder);
 	}
 
 	@PostMapping("/InsertActivities")
-	public LSactivity InsertActivities(@RequestBody LSactivity objActivity) {
+	public LSactivity InsertActivities(@RequestBody LSactivity objActivity) throws Exception  {
 		return instrumentService.InsertActivities(objActivity);
 	}
 
 	@PostMapping("/Getorderbytype")
-	public Map<String, Object> Getorderbytype(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> Getorderbytype(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		Map<String, Object> mapOrders = new HashMap<String, Object>();
 		objorder.setOrderflag("N");
 		if (objorder.getLsuserMaster().getUsername().trim().toLowerCase().equals("administrator")) {
@@ -106,7 +106,7 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/Getorderbytypeandflag")
-	public Map<String, Object> Getorderbytypeandflag(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> Getorderbytypeandflag(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		Map<String, Object> mapOrders = new HashMap<String, Object>();
 		if (objorder.getLsuserMaster().getUsername() != null
 				&& objorder.getLsuserMaster().getUsername().trim().toLowerCase().equals("administrator")) {
@@ -128,7 +128,7 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/Getorderbytypeandflaglazy")
-	public Map<String, Object> Getorderbytypeandflaglazy(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> Getorderbytypeandflaglazy(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		Map<String, Object> mapOrders = new HashMap<String, Object>();
 		if (objorder.getLsuserMaster().getUsername().trim().toLowerCase().equals("administrator")) {
 			instrumentService.Getorderbytypeandflaglazy(objorder, mapOrders);
@@ -146,7 +146,7 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/Getorderallbytypeandflaglazy")
-	public Map<String, Object> Getorderallbytypeandflaglazy(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> Getorderallbytypeandflaglazy(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		Map<String, Object> mapOrders = new HashMap<String, Object>();
 		if (objorder.getLsuserMaster().getUsername().trim().toLowerCase().equals("administrator")) {
 			instrumentService.Getorderallbytypeandflaglazy(objorder, mapOrders);
@@ -164,32 +164,32 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/GetWorkflowonUser")
-	public List<LSworkflow> GetWorkflowonUser(@RequestBody LSuserMaster objuser) {
+	public List<LSworkflow> GetWorkflowonUser(@RequestBody LSuserMaster objuser) throws Exception {
 		return instrumentService.GetWorkflowonUser(objuser);
 	}
 
 	@PostMapping("/GetWorkflowanduseronUsercode")
-	public Map<String, Object> GetWorkflowanduseronUsercode(@RequestBody LSuserMaster usercode) {
+	public Map<String, Object> GetWorkflowanduseronUsercode(@RequestBody LSuserMaster usercode) throws Exception {
 		return instrumentService.GetWorkflowanduseronUsercode(usercode);
 	}
 
 	@PostMapping("/GetorderStatus")
-	public LSlogilablimsorderdetail GetorderStatus(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail GetorderStatus(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.GetorderStatus(objorder);
 	}
 
 	@PostMapping("/GetdetailorderStatus")
-	public LSlogilablimsorderdetail GetdetailorderStatus(@RequestBody LSlogilablimsorderdetail objupdatedorder) {
+	public LSlogilablimsorderdetail GetdetailorderStatus(@RequestBody LSlogilablimsorderdetail objupdatedorder) throws Exception {
 		return instrumentService.GetdetailorderStatus(objupdatedorder);
 	}
 
 	@PostMapping("/GetResults")
-	public List<LSresultdetails> GetResults(@RequestBody LSlogilablimsorderdetail objorder) {
+	public List<LSresultdetails> GetResults(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.GetResults(objorder);
 	}
 
 	@PostMapping("/SaveResultfile")
-	public LSsamplefile SaveResultfile(@RequestBody LSsamplefile objfile) {
+	public LSsamplefile SaveResultfile(@RequestBody LSsamplefile objfile) throws Exception {
 //		if (objfile.getObjuser() != null) {
 //
 //			LSuserMaster userClass = auditService.CheckUserPassWord(objfile.getObjuser());
@@ -216,7 +216,7 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/UpdateLimsOrder")
-	public LSlogilablimsorderdetail UpdateLimsOrder(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail UpdateLimsOrder(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		if (objorder.getObjuser() != null) {
 
 			LSuserMaster userClass = auditService.CheckUserPassWord(objorder.getObjuser());
@@ -243,12 +243,12 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/Getupdatedorder")
-	public LSlogilablimsorderdetail Getupdatedorder(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail Getupdatedorder(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.Getupdatedorder(objorder);
 	}
 
 	@PostMapping("/Getorderforlink")
-	public Map<String, Object> Getorderforlink(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> Getorderforlink(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.Getorderforlink(objorder);
 	}
 
@@ -259,7 +259,7 @@ public class InstrumentController {
 //	}
 
 	@PostMapping("/CompleteOrder")
-	public LSlogilablimsorderdetail CompleteOrder(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail CompleteOrder(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 //		if (objorder.getObjuser() != null) {
 //
 //			LSuserMaster userClass = auditService.CheckUserPassWord(objorder.getObjuser());
@@ -286,37 +286,37 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/updateworflowforOrder")
-	public LSlogilablimsorderdetail updateworflowforOrder(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail updateworflowforOrder(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.updateworflowforOrder(objorder);
 	}
 
 	@PostMapping("/Getfileversions")
-	public List<LSsamplefileversion> Getfileversions(@RequestBody LSsamplefile objfile) {
+	public List<LSsamplefileversion> Getfileversions(@RequestBody LSsamplefile objfile) throws Exception {
 		return instrumentService.Getfileversions(objfile);
 	}
 
 	@PostMapping("/GetfileverContent")
-	public String GetfileverContent(@RequestBody LSsamplefile objfile) {
+	public String GetfileverContent(@RequestBody LSsamplefile objfile) throws Exception {
 		return instrumentService.GetfileverContent(objfile);
 	}
 
 	@PostMapping("/GetResultfileverContent")
-	public LSsamplefile GetResultfileverContent(@RequestBody LSsamplefile objfile) {
+	public LSsamplefile GetResultfileverContent(@RequestBody LSsamplefile objfile) throws Exception {
 		return instrumentService.GetResultfileverContent(objfile);
 	}
 
 	@PostMapping("/Getorderbyfile")
-	public List<LSlogilablimsorderdetail> Getorderbyfile(@RequestBody LSlogilablimsorderdetail objorder) {
+	public List<LSlogilablimsorderdetail> Getorderbyfile(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.Getorderbyfile(objorder);
 	}
 
 	@PostMapping("/Getexcelorder")
-	public List<LSlogilablimsorderdetail> Getexcelorder(@RequestBody LSlogilablimsorderdetail objorder) {
+	public List<LSlogilablimsorderdetail> Getexcelorder(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.Getexcelorder(objorder);
 	}
 
 	@PostMapping("/updateVersionandWorkflowhistory")
-	public LSlogilablimsorderdetail updateVersionandWorkflowhistory(@RequestBody LSlogilablimsorderdetail objorder) {
+	public LSlogilablimsorderdetail updateVersionandWorkflowhistory(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.updateVersionandWorkflowhistory(objorder);
 	}
 
@@ -382,17 +382,17 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/deleteattachments")
-	public LsOrderattachments deleteattachments(@RequestBody LsOrderattachments objattachments) {
+	public LsOrderattachments deleteattachments(@RequestBody LsOrderattachments objattachments) throws Exception {
 		return instrumentService.deleteattachments(objattachments);
 	}
 
 	@PostMapping("/Clouddeleteattachments")
-	public LsOrderattachments Clouddeleteattachments(@RequestBody LsOrderattachments objattachments) {
+	public LsOrderattachments Clouddeleteattachments(@RequestBody LsOrderattachments objattachments) throws Exception {
 		return instrumentService.Clouddeleteattachments(objattachments);
 	}
 
 	@GetMapping("/getmetatag")
-	public String getmetatag() {
+	public String getmetatag() throws Exception {
 		String jsonString = "[{\"1e89782a-1357-4108-928c-4c05e2731397-T2\":{\"ParsedData\":{\"MultiFileds\":{\"MultiParserFields\":{\"MultiParsedFields_0\":[{\"SampleID\":\"Baseline\",\"Value1\":\"0.005\",\"Value2\":\"0.000\",\"Value3\":\"0.000\"},{\"SampleID\":\"Primer\",\"Value1\":\"0.502\",\"Value2\":\"0.982\",\"Value3\":\"1.004\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.506\",\"Value2\":\"0.996\",\"Value3\":\"0.996\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.396\",\"Value2\":\"0.504\",\"Value3\":\"0.508\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.297\",\"Value2\":\"0.207\",\"Value3\":\"0.200\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.196\",\"Value2\":\"0.099\",\"Value3\":\"0.095\"},{\"SampleID\":\"0.257\",\"Value1\":\"0.399\",\"Value2\":\"0.402\",\"Value3\":\"\"},{\"SampleID\":\"0.252\",\"Value1\":\"0.400\",\"Value2\":\"0.399\",\"Value3\":\"\"},{\"SampleID\":\"Final\",\"Value1\":\"Base\",\"Value2\":\"0.005\",\"Value3\":\"0.000\"}]},\"MultiParsedFieldsTableInfo\":{\"MultiParsedFieldsTableInfo_0\":[{\"sFieldName\":\"Method1\",\"sFieldValue\":\"MBAS\"},{\"sFieldName\":\"Method2\",\"sFieldValue\":\"phenol\"},{\"sFieldName\":\"Method3\",\"sFieldValue\":\"CN\"}]}},\"SingleFields\":[{\"FieldName\":\"Method1\",\"FieldValue\":\"MBAS\"},{\"FieldName\":\"Method2\",\"FieldValue\":\"phenol\"},{\"FieldName\":\"Method3\",\"FieldValue\":\"CN\"}]},\"FileMetaTags\":[{\"Property\":\"Name\",\"Values\":\"200701DR1-RUN-02\"},{\"Property\":\"Size\",\"Values\":\"14.1 KB\"},{\"Property\":\"Itemtype\",\"Values\":\"Adobe Acrobat Document\"},{\"Property\":\"Date modified\",\"Values\":\"18-02-2021 18:08\"},{\"Property\":\"Date created\",\"Values\":\"19-02-2021 17:36\"},{\"Property\":\"Date accessed\",\"Values\":\"19-02-2021 17:36\"},{\"Property\":\"Attributes\",\"Values\":\"A\"},{\"Property\":\"Perceived type\",\"Values\":\"Unspecified\"},{\"Property\":\"Owner\",\"Values\":\"AGL66\\\\Pasupathi\"},{\"Property\":\"Kind\",\"Values\":\"Document\"},{\"Property\":\"Rating\",\"Values\":\"Unrated\"}],\"BatchID\":\"001\",\"FileLink\":\"http://AGL66:8081/SDMS_Web/Login.html?GUID=1e89782a-1357-4108-928c-4c05e2731397&TaskID=T2\",\"TransferID\":\"BF204D77-F1D3-49E7-883B-61611C5A9F31\",\"OrderID\":\"20210218124411210\",\"Tags\":{\"UnMappedTemplateTags\":[],\"MappedTemplateTags\":{\"QC\":[{\"TagName\":\"Sample\",\"TagValue\":\"Pantoprazole tablets IP\",\"CreatedBy\":\"Administrator\",\"CreatedOn\":\"2021-02-19 12:06:15\"},{\"TagName\":\"Test\",\"TagValue\":\"Dissolution\",\"CreatedBy\":\"Administrator\",\"CreatedOn\":\"2021-02-19 12:06:15\"}]}}}}]";
 
 		jsonString = instrumentService.getsampledata();
@@ -432,32 +432,32 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/Insertshareorder")
-	public Lsordershareto Insertshareorder(@RequestBody Lsordershareto objordershareto) {
+	public Lsordershareto Insertshareorder(@RequestBody Lsordershareto objordershareto) throws Exception {
 		return instrumentService.Insertshareorder(objordershareto);
 	}
 
 	@PostMapping("/Insertshareorderby")
-	public Map<String, Object> Insertshareorderby(@RequestBody Lsordersharedby objordersharedby) {
+	public Map<String, Object> Insertshareorderby(@RequestBody Lsordersharedby objordersharedby) throws Exception {
 		return instrumentService.Insertshareorderby(objordersharedby);
 	}
 
 	@PostMapping("/Getordersharedbyme")
-	public List<Lsordersharedby> Getordersharedbyme(@RequestBody Lsordersharedby lsordersharedby) {
+	public List<Lsordersharedby> Getordersharedbyme(@RequestBody Lsordersharedby lsordersharedby) throws Exception {
 		return instrumentService.Getordersharedbyme(lsordersharedby);
 	}
 
 	@PostMapping("/Getordersharetome")
-	public List<Lsordershareto> Getordersharetome(@RequestBody Lsordershareto lsordershareto) {
+	public List<Lsordershareto> Getordersharetome(@RequestBody Lsordershareto lsordershareto) throws Exception {
 		return instrumentService.Getordersharetome(lsordershareto);
 	}
 
 	@PostMapping("/Unshareorderby")
-	public Lsordersharedby Unshareorderby(@RequestBody Lsordersharedby objordershareby) {
+	public Lsordersharedby Unshareorderby(@RequestBody Lsordersharedby objordershareby) throws Exception {
 		return instrumentService.Unshareorderby(objordershareby);
 	}
 
 	@PostMapping("/Unshareorderto")
-	public Lsordershareto Unshareorderto(@RequestBody Lsordershareto lsordershareto) {
+	public Lsordershareto Unshareorderto(@RequestBody Lsordershareto lsordershareto) throws Exception {
 		return instrumentService.Unshareorderto(lsordershareto);
 	}
 
@@ -467,17 +467,17 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/GetsharedtomeorderStatus")
-	public Lsordershareto GetsharedtomeorderStatus(@RequestBody Lsordershareto objorder) {
+	public Lsordershareto GetsharedtomeorderStatus(@RequestBody Lsordershareto objorder) throws Exception {
 		return instrumentService.GetsharedtomeorderStatus(objorder);
 	}
 
 	@PostMapping("/GetResultsharedfileverContent")
-	public LSsamplefile GetResultsharedfileverContent(@RequestBody LSsamplefile objfile) {
+	public LSsamplefile GetResultsharedfileverContent(@RequestBody LSsamplefile objfile) throws Exception {
 		return instrumentService.GetResultsharedfileverContent(objfile);
 	}
 
 	@PostMapping("/SaveSharedResultfile")
-	public LSsamplefile SaveSharedResultfile(@RequestBody LSsamplefile objfile) {
+	public LSsamplefile SaveSharedResultfile(@RequestBody LSsamplefile objfile) throws Exception {
 		return instrumentService.SaveSharedResultfile(objfile);
 	}
 
@@ -502,12 +502,12 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/SharedClouddeleteattachments")
-	public LsOrderattachments SharedClouddeleteattachments(@RequestBody LsOrderattachments objattachments) {
+	public LsOrderattachments SharedClouddeleteattachments(@RequestBody LsOrderattachments objattachments) throws Exception {
 		return instrumentService.SharedClouddeleteattachments(objattachments);
 	}
 
 	@PostMapping("/shareddeleteattachments")
-	public LsOrderattachments shareddeleteattachments(@RequestBody LsOrderattachments objattachments) {
+	public LsOrderattachments shareddeleteattachments(@RequestBody LsOrderattachments objattachments) throws Exception {
 		return instrumentService.shareddeleteattachments(objattachments);
 	}
 
@@ -565,17 +565,17 @@ public class InstrumentController {
 	}
 
 	@RequestMapping("/GetOrderResourcesQuantitylst")
-	public List<LsOrderSampleUpdate> GetOrderResourcesQuantitylst(@RequestBody LsOrderSampleUpdate objorder) {
+	public List<LsOrderSampleUpdate> GetOrderResourcesQuantitylst(@RequestBody LsOrderSampleUpdate objorder) throws Exception {
 		return instrumentService.GetOrderResourcesQuantitylst(objorder);
 	}
 
 	@RequestMapping("/SaveOrderResourcesQuantity")
-	public Map<String, Object> SaveOrderResourcesQuantity(@RequestBody Map<String, Object> argobj) {
+	public Map<String, Object> SaveOrderResourcesQuantity(@RequestBody Map<String, Object> argobj) throws Exception {
 		return instrumentService.SaveOrderResourcesQuantity(argobj);
 	}
 
 	@RequestMapping("/GetEditedOrderResources")
-	public List<Lsrepositoriesdata> GetEditedOrderResources(@RequestBody Lsrepositoriesdata objorder) {
+	public List<Lsrepositoriesdata> GetEditedOrderResources(@RequestBody Lsrepositoriesdata objorder) throws Exception {
 		return instrumentService.GetEditedOrderResources(objorder);
 	}
 
@@ -584,7 +584,7 @@ public class InstrumentController {
 			@RequestParam("cellindex") Integer cellindex, @RequestParam("sheetval") Integer sheetval,
 			@RequestParam("tagdata") String tagdata, @RequestParam("tagvalue") String tagvalue,
 			@RequestParam("samplevalue") String samplevalue, @RequestParam("sampledetails") String sampledetails,
-			@RequestParam("lssamplefile") Integer lssamplefile, @RequestParam("multitenant") Integer multitenant) {
+			@RequestParam("lssamplefile") Integer lssamplefile, @RequestParam("multitenant") Integer multitenant) throws Exception {
 		String jsonString = "[{\"1e89782a-1357-4108-928c-4c05e2731397-T2\":{\"ParsedData\":{\"MultiFileds\":{\"MultiParserFields\":{\"MultiParsedFields_0\":[{\"SampleID\":\"Baseline\",\"Value1\":\"0.005\",\"Value2\":\"0.000\",\"Value3\":\"0.000\"},{\"SampleID\":\"Primer\",\"Value1\":\"0.502\",\"Value2\":\"0.982\",\"Value3\":\"1.004\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.506\",\"Value2\":\"0.996\",\"Value3\":\"0.996\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.396\",\"Value2\":\"0.504\",\"Value3\":\"0.508\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.297\",\"Value2\":\"0.207\",\"Value3\":\"0.200\"},{\"SampleID\":\"Cal.\",\"Value1\":\"0.196\",\"Value2\":\"0.099\",\"Value3\":\"0.095\"},{\"SampleID\":\"0.257\",\"Value1\":\"0.399\",\"Value2\":\"0.402\",\"Value3\":\"\"},{\"SampleID\":\"0.252\",\"Value1\":\"0.400\",\"Value2\":\"0.399\",\"Value3\":\"\"},{\"SampleID\":\"Final\",\"Value1\":\"Base\",\"Value2\":\"0.005\",\"Value3\":\"0.000\"}]},\"MultiParsedFieldsTableInfo\":{\"MultiParsedFieldsTableInfo_0\":[{\"sFieldName\":\"Method1\",\"sFieldValue\":\"MBAS\"},{\"sFieldName\":\"Method2\",\"sFieldValue\":\"phenol\"},{\"sFieldName\":\"Method3\",\"sFieldValue\":\"CN\"}]}},\"SingleFields\":[{\"FieldName\":\"Method1\",\"FieldValue\":\"MBAS\"},{\"FieldName\":\"Method2\",\"FieldValue\":\"phenol\"},{\"FieldName\":\"Method3\",\"FieldValue\":\"CN\"}]},\"FileMetaTags\":[{\"Property\":\"Name\",\"Values\":\"200701DR1-RUN-02\"},{\"Property\":\"Size\",\"Values\":\"14.1 KB\"},{\"Property\":\"Itemtype\",\"Values\":\"Adobe Acrobat Document\"},{\"Property\":\"Date modified\",\"Values\":\"18-02-2021 18:08\"},{\"Property\":\"Date created\",\"Values\":\"19-02-2021 17:36\"},{\"Property\":\"Date accessed\",\"Values\":\"19-02-2021 17:36\"},{\"Property\":\"Attributes\",\"Values\":\"A\"},{\"Property\":\"Perceived type\",\"Values\":\"Unspecified\"},{\"Property\":\"Owner\",\"Values\":\"AGL66\\\\Pasupathi\"},{\"Property\":\"Kind\",\"Values\":\"Document\"},{\"Property\":\"Rating\",\"Values\":\"Unrated\"}],\"BatchID\":\"001\",\"FileLink\":\"http://AGL66:8081/SDMS_Web/Login.html?GUID=1e89782a-1357-4108-928c-4c05e2731397&TaskID=T2\",\"TransferID\":\"BF204D77-F1D3-49E7-883B-61611C5A9F31\",\"OrderID\":\"20210218124411210\",\"Tags\":{\"UnMappedTemplateTags\":[],\"MappedTemplateTags\":{\"QC\":[{\"TagName\":\"Sample\",\"TagValue\":\"Pantoprazole tablets IP\",\"CreatedBy\":\"Administrator\",\"CreatedOn\":\"2021-02-19 12:06:15\"},{\"TagName\":\"Test\",\"TagValue\":\"Dissolution\",\"CreatedBy\":\"Administrator\",\"CreatedOn\":\"2021-02-19 12:06:15\"}]}}}}]";
 
 		jsonString = instrumentService.getsampledata(batchcode, indexrow, cellindex, sheetval, tagdata, tagvalue,
@@ -632,29 +632,29 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/Getuserworkflow")
-	public List<Integer> Getuserworkflow(@RequestBody LSusergroup lsusergroup) {
+	public List<Integer> Getuserworkflow(@RequestBody LSusergroup lsusergroup) throws Exception {
 		return instrumentService.Getuserworkflow(lsusergroup);
 	}
 
 	@PostMapping("/Getuserprojects")
-	public Map<String, Object> Getuserprojects(@RequestBody LSuserMaster objuser) {
+	public Map<String, Object> Getuserprojects(@RequestBody LSuserMaster objuser) throws Exception {
 		return instrumentService.Getuserprojects(objuser);
 	}
 
 	@PostMapping("/Getinitialorders")
-	public Map<String, Object> Getinitialorders(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> Getinitialorders(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.Getinitialorders(objorder);
 	}
 
 	@PostMapping("/Getremainingorders")
-	public List<Logilabordermaster> Getremainingorders(@RequestBody LSlogilablimsorderdetail objorder) {
+	public List<Logilabordermaster> Getremainingorders(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.Getremainingorders(objorder);
 	}
 
 	@PostMapping("/uploadsheetimages")
 	public Map<String, Object> uploadsheetimages(@RequestParam("file") MultipartFile file,
 			@RequestParam("originurl") String originurl, @RequestParam("username") String username,
-			@RequestParam("sitecode") String sitecode) {
+			@RequestParam("sitecode") String sitecode) throws Exception {
 		return instrumentService.uploadsheetimages(file, originurl, username, sitecode);
 	}
 
@@ -695,17 +695,17 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/removesheetimage")
-	public Response removesheetimage(@RequestBody Map<String, String> body) {
+	public Response removesheetimage(@RequestBody Map<String, String> body) throws Exception {
 		return instrumentService.removesheetimage(body);
 	}
 
 	@PostMapping("/updatesheetimagesforversion")
-	public boolean updatesheetimagesforversion(@RequestBody List<Map<String, String>> lstfiles) {
+	public boolean updatesheetimagesforversion(@RequestBody List<Map<String, String>> lstfiles) throws Exception {
 		return instrumentService.updatesheetimagesforversion(lstfiles);
 	}
 
 	@PostMapping("/deletesheetimagesforversion")
-	public boolean deletesheetimagesforversion(@RequestBody List<Map<String, String>> lstfiles) {
+	public boolean deletesheetimagesforversion(@RequestBody List<Map<String, String>> lstfiles) throws Exception {
 		return instrumentService.deletesheetimagesforversion(lstfiles);
 	}
 
@@ -770,7 +770,7 @@ public class InstrumentController {
 	}
 
 	@PostMapping("/deletesheetimagesforversionSql")
-	public boolean deletesheetimagesforversionSql(@RequestBody List<Map<String, String>> lstfiles) {
+	public boolean deletesheetimagesforversionSql(@RequestBody List<Map<String, String>> lstfiles)throws Exception {
 		return instrumentService.deletesheetimagesforversionSql(lstfiles);
 	}
 	
@@ -787,12 +787,12 @@ public class InstrumentController {
 	}
 	
 	@PostMapping("/GetLimsorderid")
-	public Map<String, Object> GetLimsorderid(@RequestBody String orderid) {
+	public Map<String, Object> GetLimsorderid(@RequestBody String orderid) throws Exception {
 		return instrumentService.GetLimsorderid(orderid);
 	}
 	
 	@PostMapping("/GetorderforlinkLIMS")
-	public Map<String, Object> GetorderforlinkLIMS(@RequestBody LSlogilablimsorderdetail objorder) {
+	public Map<String, Object> GetorderforlinkLIMS(@RequestBody LSlogilablimsorderdetail objorder) throws Exception {
 		return instrumentService.GetorderforlinkLIMS(objorder);
 	}
 	
@@ -803,7 +803,7 @@ public class InstrumentController {
 	}
 	
 	@PostMapping("/getlsorderfileversion")
-	public List<LSsamplefileversion> getlsorderfileversion(@RequestBody LSsamplefile objfile) {
+	public List<LSsamplefileversion> getlsorderfileversion(@RequestBody LSsamplefile objfile) throws Exception {
 		return instrumentService.getlsorderfileversion(objfile);
 	}
 
