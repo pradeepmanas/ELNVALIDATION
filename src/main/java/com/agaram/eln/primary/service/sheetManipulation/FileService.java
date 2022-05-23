@@ -663,7 +663,7 @@ public class FileService {
 							}
 						}
 					}
-				} else {
+				} else if(IsNewsheet) {
 					Notifiction =IsNewsheet == true ?"SHEETCREATED":"SHEETMODIFIED";
 					Details = "{\"ordercode\":\"" + objFile.getFilecode() + "\", \"order\":\""
 							+ objFile.getFilenameuser() + "\", \"previousworkflow\":\"" + ""

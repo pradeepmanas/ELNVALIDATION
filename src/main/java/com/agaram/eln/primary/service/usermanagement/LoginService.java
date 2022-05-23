@@ -24,7 +24,6 @@ import com.agaram.eln.config.ADS_Connection;
 import com.agaram.eln.config.AESEncryption;
 import com.agaram.eln.config.JwtTokenUtil;
 import com.agaram.eln.primary.commonfunction.commonfunction;
-import com.agaram.eln.primary.fetchmodel.getorders.Logilaborders;
 import com.agaram.eln.primary.model.cfr.LSaudittrailconfiguration;
 import com.agaram.eln.primary.model.cfr.LScfttransaction;
 import com.agaram.eln.primary.model.general.Response;
@@ -41,8 +40,6 @@ import com.agaram.eln.primary.model.usermanagement.LSuserMaster;
 import com.agaram.eln.primary.model.usermanagement.LSusergroup;
 import com.agaram.eln.primary.model.usermanagement.LoggedUser;
 import com.agaram.eln.primary.repository.cfr.LScfttransactionRepository;
-import com.agaram.eln.primary.repository.instrumentDetails.LSlogilablimsorderdetailRepository;
-import com.agaram.eln.primary.repository.sheetManipulation.LSsheetworkflowRepository;
 import com.agaram.eln.primary.repository.sheetManipulation.NotificationRepository;
 import com.agaram.eln.primary.repository.usermanagement.LSMultiusergroupRepositery;
 import com.agaram.eln.primary.repository.usermanagement.LSPasswordHistoryDetailsRepository;
@@ -112,11 +109,11 @@ public class LoginService {
 //	@Autowired
 //	private LSfileRepository lSfileRepository;
 
-	@Autowired
-	private LSsheetworkflowRepository lssheetworkflowRepository;
-
-	@Autowired
-	private LSlogilablimsorderdetailRepository lslogilablimsorderdetailRepository;
+//	@Autowired
+//	private LSsheetworkflowRepository lssheetworkflowRepository;
+//
+//	@Autowired
+//	private LSlogilablimsorderdetailRepository lslogilablimsorderdetailRepository;
 
 //	@Autowired
 //	private commonfunction commonfunction;
@@ -177,7 +174,7 @@ public class LoginService {
 
 		String username = objuser.getsUsername();
 		LSSiteMaster objsiteobj = lSSiteMasterRepository.findBysitecode(Integer.parseInt(objuser.getsSiteCode()));
-//		objExitinguser = lSuserMasterRepository.findByUsernameIgnoreCaseAndLoginfrom(username, "0");
+
 		objExitinguser = lSuserMasterRepository.findByUsernameIgnoreCaseAndLssitemasterAndLoginfrom(username,
 				objsiteobj, "0");
 
@@ -246,11 +243,15 @@ public class LoginService {
 								return obj;
 							} else {
 								objExitinguser.getObjResponse().setStatus(true);
-
+								
+								objExitinguser.setLockcount(0);
+								lSuserMasterRepository.save(objExitinguser);
 							}
 						} else {
 							objExitinguser.getObjResponse().setStatus(true);
 
+							objExitinguser.setLockcount(0);
+							lSuserMasterRepository.save(objExitinguser);
 						}
 					}
 				} else if (objExitinguser.getUserretirestatus() != 0) {
