@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.agaram.eln.primary.model.instrumentsetup.InstrumentCategory;
 import com.agaram.eln.primary.model.instrumentsetup.InstrumentMaster;
+import com.agaram.eln.primary.model.methodsetup.Delimiter;
 import com.agaram.eln.primary.model.usermanagement.LSSiteMaster;
 import com.agaram.eln.primary.service.instrumentsetup.InstMasterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,20 +42,21 @@ public class InstMasterController {
      * @return list of active instruments.
      */
     @SuppressWarnings("unchecked")
-	@PostMapping(value = "/getInstMaster")
-    public ResponseEntity<Object> getInstMaster(@Valid @RequestBody Map<String, LSSiteMaster> siteObj) throws Exception {
-    	@SuppressWarnings("unchecked")
+    @PostMapping(value = "/getInstMaster")
+    public ResponseEntity<Object> getInstMaster(@Valid @RequestBody Map<String, LSSiteMaster> siteObj)throws Exception {
+   // 	@SuppressWarnings("unchecked")
 		Map<String, Object> obj = (Map<String, Object>) siteObj.get("inputData");
     	Map<String, Object> objsite = null ;
     	if(obj == null)
     	{
     		objsite = (Map<String, Object>) siteObj.get("site");
-    		//return  masterService.getInstMaster(siteObj.get("site"));
     		LSSiteMaster site = new LSSiteMaster();
-    		int nSitecode = (int) objsite.get("sitecode");
-    		site.setSitecode(nSitecode);
-            
+    		//int nSitecode = (int) objsite.get("sitecode");
+    		String sSitecode =  (String) objsite.get("sitecode");
+    		int sitecode = Integer.parseInt(sSitecode);
+    		site.setSitecode(sitecode);
     		return  masterService.getInstMaster(site);
+    
     	}
     	else
     	{
@@ -78,8 +80,8 @@ public class InstMasterController {
      * @return response entity with newly added instrument master object
      */
     @PostMapping(value = "/createInstMaster")    
-    public ResponseEntity<Object> createInstrumentMaster(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)
-    		throws Exception {    		
+    public ResponseEntity<Object> createInstrumentMaster(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception
+    {    		
 	      final ObjectMapper mapper = new ObjectMapper();		
 		  final InstrumentMaster master = mapper.convertValue(mapObject.get("instMaster"), InstrumentMaster.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -119,16 +121,16 @@ public class InstMasterController {
     @PostMapping(value = "/updateInstMasterStatus")
     public ResponseEntity<Object> deleteInstMaster(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
     	
-//    	  final ObjectMapper mapper = new ObjectMapper();	
+    	  final ObjectMapper mapper = new ObjectMapper();	
 		  final Boolean saveAuditTrail = (Boolean)mapObject.get("saveAuditTrail");
 		 // final Page page = mapper.convertValue(mapObject.get("modulePage"), Page.class);
 		  
 		  String strUserKey = (String) mapObject.get("doneByUserKey");
 		  
 		  final int doneByUserKey = Integer.parseInt(strUserKey);
-		  
+		  final  InstrumentMaster  otherdetails = mapper.convertValue(mapObject.get("otherdetails"), InstrumentMaster.class);
 		  return masterService.deleteInstMaster((Integer) mapObject.get("instmastkey"), saveAuditTrail, 
-				   (String)mapObject.get("comments"),doneByUserKey,  request);
+				   (String)mapObject.get("comments"),doneByUserKey,  request,otherdetails);
     }
     
     /**

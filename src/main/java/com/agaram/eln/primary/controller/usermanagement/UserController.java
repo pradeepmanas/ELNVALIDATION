@@ -1,8 +1,6 @@
 package com.agaram.eln.primary.controller.usermanagement;
 
 import java.io.ByteArrayInputStream;
-
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,10 +67,6 @@ public class UserController {
 	
 	@Autowired
 	private CloudFileManipulationservice cloudFileManipulationservice;
-	
-//	@Autowired
-//	private UserSignature UserSignature;
-	
 	/**
 	 * UserGroup
 	 * 
@@ -117,7 +111,7 @@ public class UserController {
 	{
 	  return userService.GetUserGroup(objusermaster);
 	}
-	//usercode
+	
 	@PostMapping("/getMultiUserGroup")
 	public List<LSMultiusergroup> getMultiUserGroup(@RequestBody LSuserMaster objusermaster)throws Exception
 	{
@@ -161,16 +155,7 @@ public class UserController {
 	 */
 	@PostMapping("/InsertUpdateUser")
 	public LSuserMaster InsertUpdateUser(@RequestBody LSuserMaster objusermaster) throws MessagingException {
-//		if (objusermaster.getObjuser() != null) {
-//			if (objusermaster.getUserstatus().trim() == "Active") {
-//				objusermaster.setUserstatus("A");
-//			} else if (objusermaster.getUserstatus().trim() == "Deactive") {
-//				objusermaster.setUserstatus("D");
-//			} else {
-//				objusermaster.setUserstatus("Locked");
-//			}
-//			return userService.InsertUpdateUser(objusermaster);
-//		}
+
 		return userService.InsertUpdateUser(objusermaster);
 	}
 	
@@ -307,7 +292,7 @@ public class UserController {
 //		return  userService.GetPasswordPolicySitewise(objpwd);
 //	}
 	@PostMapping("/Uploadprofilepic")
-    public ProfilePicture Uploadprofilepic(@RequestParam("file") MultipartFile file, 
+    public ProfilePicture Uploadprofilepic(@RequestParam("file") MultipartFile file,
     		@RequestParam("usercode") Integer usercode, @RequestParam("date") Date currentdate)throws Exception {
         
 		ProfilePicture profilePicture = new ProfilePicture();
@@ -320,6 +305,20 @@ public class UserController {
         return profilePicture;
     }
 	
+	
+	@PostMapping("/CloudUploadprofilepic")
+    public CloudProfilePicture CloudUploadprofilepic(@RequestParam("file") MultipartFile file,
+    		@RequestParam("usercode") Integer usercode, @RequestParam("date") Date currentdate)throws Exception {
+        
+		CloudProfilePicture profilePicture = new CloudProfilePicture();
+        try {
+        	profilePicture = cloudFileManipulationservice.addPhoto(usercode, file,currentdate);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return profilePicture;
+    }
 	
 	@PostMapping("/CloudUploadusersignature")
     public CloudUserSignature CloudUploadusersignature(@RequestParam("file") MultipartFile file, @RequestParam("usercode") Integer usercode
@@ -459,7 +458,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/UploadELNUserSignature")
-    public UserSignature UploadELNUserSignature1(@RequestParam("file") MultipartFile file, 
+    public UserSignature UploadELNUserSignature1(@RequestParam("file") MultipartFile file,
     		@RequestParam("usercode") Integer usercode, @RequestParam("date") Date currentdate)throws Exception {
         
 		UserSignature UserSignature = new UserSignature();
@@ -471,7 +470,6 @@ public class UserController {
 		}
         return UserSignature;
     }
-	
 	
 	@RequestMapping("/Getnotification")
 	public Map<String, Object> Getnotification(@RequestBody LSuserMaster lsuserMaster)throws Exception
@@ -495,6 +493,12 @@ public class UserController {
 	public Map<String, Object> GetLatestnotification(@RequestBody LSnotification lsnotification)throws Exception
 	{
 		return userService.GetLatestnotification(lsnotification);
+	}
+	
+	@RequestMapping("/GetLatestnotificationcount")
+	public Map<String, Object> GetLatestnotificationcount(@RequestBody LSnotification lsnotification)throws Exception
+	{
+		return userService.GetLatestnotificationcount(lsnotification);
 	}
 	
 	@PostMapping("/UpdateUseraction")
@@ -586,18 +590,10 @@ public class UserController {
 		return userService.getGroupedcolumn(objgroupped);
 	}
 	
-	@PostMapping("/CloudUploadprofilepic")
-    public CloudProfilePicture CloudUploadprofilepic(@RequestParam("file") MultipartFile file, 
-    		@RequestParam("usercode") Integer usercode, @RequestParam("date") Date currentdate)throws Exception {
-        
-		CloudProfilePicture profilePicture = new CloudProfilePicture();
-        try {
-        	profilePicture = cloudFileManipulationservice.addPhoto(usercode, file,currentdate);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        return profilePicture;
-    }
+	@PostMapping("/getUsersManinFormLicenseStatus")
+	public Boolean getUsersManinFrameLicenseStatus(@RequestBody LSSiteMaster objsite)throws Exception
+	{
+		return userService.getUsersManinFrameLicenseStatus(objsite);
+	}
 }
 

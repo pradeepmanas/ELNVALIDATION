@@ -38,6 +38,7 @@ public class LSnotification {
 	
 	private int isnewnotification;
 	
+//	@Column(columnDefinition = "date",name = "CreatedTimeStamp")
 	@Column(name = "CreatedTimeStamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date notificationdate;

@@ -1,7 +1,9 @@
 package com.agaram.eln.primary.model.instrumentDetails;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,6 +33,7 @@ import com.agaram.eln.primary.model.sheetManipulation.LSworkflow;
 import com.agaram.eln.primary.model.usermanagement.LSprojectmaster;
 import com.agaram.eln.primary.model.usermanagement.LSuserMaster;
 import com.agaram.eln.primary.model.usermanagement.LoggedUser;
+import com.agaram.eln.primary.model.methodsetup.ELNFileAttachments;
 
 @Entity(name = "LSlogilablimsorderdetail")
 @Table(name = "LSlogilablimsorderdetail")
@@ -68,28 +71,49 @@ public class LSlogilablimsorderdetail {
 	private Integer approvelstatus;
 	@Column(name = "lockeduser") 
 	private Integer lockeduser;
+	@Column(columnDefinition = "varchar(50)",name = "lockedusername") 
+	private String lockedusername;
 	
 	private Integer testcode;
 	private String testname;
+
+	@Transient
+	@Temporal(TemporalType.TIMESTAMP)
+	Date modifidate;
 	
-	//columnDefinition = "nchar(10)",
+	public Date getModifidate() {
+		return modifidate;
+	}
+	public void setModifidate(Date modifidate) {
+		this.modifidate = modifidate;
+	}
+
 	@Column(columnDefinition = "char(10)",name = "OrderFlag")
 	private String orderflag;
-	//columnDefinition = "date",
+
 	@Column(name = "CreatedTimeStamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdtimestamp;
-	//columnDefinition = "date",
+	
 	@Column(name = "CompletedTimeStamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date completedtimestamp;
-	//columnDefinition = "varchar(100)",
+
 	@Column(columnDefinition = "varchar(100)",name = "MethodCode")
 	private String methodcode;
-	//columnDefinition = "varchar(100)",
+
 	@Column(columnDefinition = "varchar(100)",name = "InstrumentCode")
 	private String instrumentcode;
 	
+	@Column(columnDefinition = "varchar(250)",name = "Keyword") 
+	private String keyword;
+	
+	public String getKeyword() {
+		return keyword;
+	}
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
+	}
 	@ManyToOne
 	private LSworkflow lsworkflow;
 	
@@ -106,8 +130,9 @@ public class LSlogilablimsorderdetail {
 	@JoinColumn(name="batchcode")
 	private List<LsOrderattachments> lsOrderattachments;
 	
-	@Column(columnDefinition = "varchar(250)",name = "Keyword") 
-	private String keyword;
+	@OneToMany
+	@JoinColumn(name="batchcode")
+	private List<ELNFileAttachments> ELNFileAttachments;
 	
 	@Transient
 	LScfttransaction objmanualaudit;
@@ -156,7 +181,7 @@ public class LSlogilablimsorderdetail {
 	private String filename;
 	
 	@Transient
-	private int isLock;
+	private Integer isLock;
 	
 	@Transient
 	private String nbatchcode;
@@ -167,25 +192,17 @@ public class LSlogilablimsorderdetail {
 	@Transient
 	private Integer rejected;
 	
-	
-	@Transient
-	@Temporal(TemporalType.TIMESTAMP)
-	Date modifidate;
-	
-	public Date getModifidate() {
-		return modifidate;
-	}
-	public void setModifidate(Date modifidate) {
-		this.modifidate = modifidate;
-	}
+
 	private Integer filecode;
 	
-	public Integer getRejected() {
-		return rejected;
-	}
-	public void setRejected(Integer rejected) {
-		this.rejected = rejected;
-	}
+	private Long directorycode;
+	
+//	public Integer getRejected() {
+//		return rejected;
+//	}
+//	public void setRejected(Integer rejected) {
+//		this.rejected = rejected;
+//	}
 	@ManyToOne
 	private LSuserMaster assignedto;
 	
@@ -197,6 +214,13 @@ public class LSlogilablimsorderdetail {
 	}
 	public void setLsOrderattachments(List<LsOrderattachments> lsOrderattachments) {
 		this.lsOrderattachments = lsOrderattachments;
+	}
+	
+	public List<ELNFileAttachments> getELNFileAttachments() {
+		return ELNFileAttachments;
+	}
+	public void setELNFileAttachments(List<ELNFileAttachments> ELNFileAttachments) {
+		this.ELNFileAttachments = ELNFileAttachments;
 	}
 	
 	public LScfttransaction getObjmanualaudit() {
@@ -229,9 +253,44 @@ public class LSlogilablimsorderdetail {
 	public List<LSworkflow> getLstworkflow() {
 		return lstworkflow;
 	}
+//	public void setLstworkflow(List<LSworkflow> lstworkflow) {
+//		this.lstworkflow = lstworkflow;
+//	}
+	
+	@Transient
+	private boolean canuserprocess;	
+	
+	public boolean isCanuserprocess() {
+		return canuserprocess;
+	}
+	public void setCanuserprocess(boolean canuserprocess) {
+		this.canuserprocess = canuserprocess;
+	}
+	
 	public void setLstworkflow(List<LSworkflow> lstworkflow) {
+		
+//		this.lstworkflow = lstworkflow;
+
+		if (this.lsworkflow != null && lstworkflow != null  && lstworkflow.size() > 0) {
+			List<Integer> lstworkflowcode = new ArrayList<Integer>();
+			if (lstworkflow != null && lstworkflow.size() > 0) {
+				lstworkflowcode = lstworkflow.stream().map(LSworkflow::getWorkflowcode).collect(Collectors.toList());
+
+				if (lstworkflowcode.contains(this.lsworkflow.getWorkflowcode())) {
+					this.setCanuserprocess(true);
+				} else {
+					this.setCanuserprocess(false);
+				}
+			} else {
+				this.setCanuserprocess(false);
+			}
+		} else {
+			this.setCanuserprocess(false);
+		}
+		
 		this.lstworkflow = lstworkflow;
 	}
+	
 	public Integer getApproved() {
 		return approved;
 	}
@@ -248,10 +307,10 @@ public class LSlogilablimsorderdetail {
 	}
 
 	@Transient
-	private int isLockbycurrentuser;
+	private Integer isLockbycurrentuser;
 	
 	@Transient
-	private int isFinalStep;
+	private Integer isFinalStep;
 	
 	@Transient
 	LSuserMaster objLoggeduser;
@@ -278,7 +337,19 @@ public class LSlogilablimsorderdetail {
 	private Date todate;
 	
 	@Transient
+	private Integer checked = 0;
+	
+	public Integer getChecked() {
+		return checked;
+	}
+	public void setChecked(Integer checked) {
+		this.checked = checked;
+	}
+	@Transient
 	List<LStestparameter> lstestparameter;
+	
+	@Transient
+	private Boolean noworkflow = false;
 	
 	public LSlogilablimsorderdetail()
 	{
@@ -544,30 +615,30 @@ public class LSlogilablimsorderdetail {
 		this.samplename = samplename;
 	}
 
-	public int getIsLock() {
+	public Integer getIsLock() {
 		return isLock;
 	}
-
-	public void setIsLock(int isLock) {
-		this.isLock = isLock;
+	public Integer getRejected() {
+		return rejected;
 	}
-
-	public int getIsLockbycurrentuser() {
+	public Integer getIsLockbycurrentuser() {
 		return isLockbycurrentuser;
 	}
-
-	public void setIsLockbycurrentuser(int isLockbycurrentuser) {
-		this.isLockbycurrentuser = isLockbycurrentuser;
-	}
-
-	public int getIsFinalStep() {
+	public Integer getIsFinalStep() {
 		return isFinalStep;
 	}
-
-	public void setIsFinalStep(int isFinalStep) {
+	public void setIsLock(Integer isLock) {
+		this.isLock = isLock;
+	}
+	public void setRejected(Integer rejected) {
+		this.rejected = rejected;
+	}
+	public void setIsLockbycurrentuser(Integer isLockbycurrentuser) {
+		this.isLockbycurrentuser = isLockbycurrentuser;
+	}
+	public void setIsFinalStep(Integer isFinalStep) {
 		this.isFinalStep = isFinalStep;
 	}
-
 	public LSsamplefile getLssamplefile() {
 		return lssamplefile;
 	}
@@ -674,12 +745,24 @@ public class LSlogilablimsorderdetail {
 	public void setIsmultitenant(Integer ismultitenant) {
 		this.ismultitenant = ismultitenant;
 	}
-	public String getKeyword() {
-		return keyword;
+	public Boolean getNoworkflow() {
+		return noworkflow;
 	}
-	public void setKeyword(String keyword) {
-		this.keyword = keyword;
+	public void setNoworkflow(Boolean noworkflow) {
+		this.noworkflow = noworkflow;
 	}
-
+	public String getLockedusername() {
+		return lockedusername;
+	}
+	public void setLockedusername(String lockedusername) {
+		this.lockedusername = lockedusername;
+	}
+	public Long getDirectorycode() {
+		return directorycode;
+	}
+	public void setDirectorycode(Long directorycode) {
+		this.directorycode = directorycode;
+	}
+	
 	
 }

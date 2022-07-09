@@ -33,7 +33,7 @@ public class InstCategoryController {
      * @return list of active instrument categories.
      */
     @PostMapping(value = "/getInstCategory")
-    public ResponseEntity<Object> getInstCategory() throws Exception {
+    public ResponseEntity<Object> getInstCategory()throws Exception {
         return  categoryService.getInstCategory();
     }
  
@@ -45,8 +45,8 @@ public class InstCategoryController {
      * @return response entity with newly added instrument category object
      */
     @PostMapping(value = "/createInstCategory")
-    public ResponseEntity<Object> createInstrumentCategory(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)
-    		throws Exception {
+    public ResponseEntity<Object> createInstrumentCategory(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception
+    {
        final ObjectMapper mapper = new ObjectMapper();		
        final InstrumentCategory category = mapper.convertValue(mapObject.get("instCategory"), InstrumentCategory.class);
        
@@ -68,7 +68,7 @@ public class InstCategoryController {
      * @return response entity with updated 'instrument category' object
      */
     @PostMapping(value = "/updateInstCategory")
-    public ResponseEntity<Object> updateInstCategory(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject) throws Exception {
+    public ResponseEntity<Object> updateInstCategory(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception{
 	 	  final ObjectMapper mapper = new ObjectMapper();
 		  final InstrumentCategory category = mapper.convertValue(mapObject.get("instCategory"), InstrumentCategory.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);

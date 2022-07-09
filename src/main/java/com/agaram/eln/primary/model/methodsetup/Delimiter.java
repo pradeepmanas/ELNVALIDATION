@@ -1,6 +1,7 @@
 package com.agaram.eln.primary.model.methodsetup;
 
 import java.io.Serializable;
+
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -12,6 +13,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -36,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer"})
 @XmlRootElement  (name = "delimiter")
 @XmlType(propOrder = { "delimiterkey", "delimitername", "actualdelimiter", 
-		 "status", "createdby", "createddate"})
+		 "status", "createdby", "createddate" , "username","transactiondate"})
 @Entity
 @Table(name = "delimiter")
 public class Delimiter implements Serializable, Diffable<Delimiter>{
@@ -61,6 +65,13 @@ public class Delimiter implements Serializable, Diffable<Delimiter>{
 	@Column(name = "status")
 	private int status=1;	
 
+	@Transient
+	private String username;
+	
+	@Transient
+	@Temporal(TemporalType.TIMESTAMP)
+	Date transactiondate;
+	
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "usercode", nullable = false)
 	private LSuserMaster createdby;
@@ -122,6 +133,24 @@ public class Delimiter implements Serializable, Diffable<Delimiter>{
 	public void setCreateddate(Date createddate) {
 		this.createddate = createddate;
 	}
+	
+	
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	
+	public Date getTransactiondate() {
+		return transactiondate;
+	}
+
+	public void setTransactiondate(Date transactiondate) {
+		this.transactiondate = transactiondate;
+	}
 
 	/**
 	 * To find difference between two entity objects by implementing Diffable interface  
@@ -134,6 +163,8 @@ public class Delimiter implements Serializable, Diffable<Delimiter>{
 	       .append("status",this.status, obj.status)
 	       .append("createdby", this.createdby.getUsername(), obj.createdby.getUsername())
 	       .append("createddate", this.createddate, obj.createddate)
+	       .append("username", this.username, obj.username)
+	       .append("transactiondate", this.transactiondate, obj.transactiondate)
 	       .build();
 	}
 
@@ -150,6 +181,8 @@ public class Delimiter implements Serializable, Diffable<Delimiter>{
 		this.status = delimiter.status;
 		this.createdby = delimiter.createdby;
 		this.createddate = delimiter.createddate;
+		this.username = delimiter.username;
+		this.transactiondate = delimiter.transactiondate;
 	}
 	
 	/**

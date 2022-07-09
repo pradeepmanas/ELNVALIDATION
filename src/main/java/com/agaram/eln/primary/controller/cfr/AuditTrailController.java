@@ -1,6 +1,8 @@
 package com.agaram.eln.primary.controller.cfr;
 
+import java.io.File;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.agaram.eln.primary.commonfunction.commonfunction;
 import com.agaram.eln.primary.model.cfr.LSaudittrailconfiguration;
@@ -35,56 +39,33 @@ public class AuditTrailController {
 	private AuditService auditService;
 
 	@GetMapping("/GetReasons")
-	public List<LScfrreasons> getreasons(@RequestBody Map<String, Object> objMap) throws Exception {
+	public List<LScfrreasons> getreasons(@RequestBody Map<String, Object> objMap)throws Exception {
 		return auditService.getreasons(objMap);
 	}
 
 	@GetMapping("/CFRTranUsername")
-	public List<LSuserMaster> CFRTranUsername(HttpServletRequest request) throws Exception {
+	public List<LSuserMaster> CFRTranUsername(HttpServletRequest request)throws Exception {
 		return auditService.CFRTranUsername();
 	}
 
 	@GetMapping(path = "/CFRTranModuleName")
-	public List<String> CFRTranModuleName(HttpServletRequest request) throws Exception {
+	public List<String> CFRTranModuleName(HttpServletRequest request)throws Exception {
 		return auditService.CFRTranModuleName();
 	}
 
 	@PostMapping("/InsertupdateReasons")
-	public LScfrreasons InsertupdateReasons(@RequestBody LScfrreasons objClass) throws Exception {
-		if (objClass.getObjuser() != null) {
-
-			LSuserMaster userClass = auditService.CheckUserPassWord(objClass.getObjuser());
-
-			if (userClass.getObjResponse().getStatus()) {
-
-				objClass.setLSuserMaster(userClass);
-
-				return auditService.InsertupdateReasons(objClass);
-			} else {
-				objClass.getObjsilentaudit().setComments("Entered invalid username and password");
-				Map<String, Object> map = new HashMap<>();
-				map.put("objsilentaudit", objClass.getObjsilentaudit());
-				map.put("objmanualaudit", objClass.getObjmanualaudit());
-				map.put("objUser", objClass.getObjuser());
-				auditService.AuditConfigurationrecord(map);
-				objClass.setResponse(new Response());
-				objClass.getResponse().setStatus(false);
-				objClass.getResponse().setInformation("ID_VALIDATION");
-				return objClass;
-			}
-
-		}
+	public LScfrreasons InsertupdateReasons(@RequestBody LScfrreasons objClass)throws Exception {
 
 		return auditService.InsertupdateReasons(objClass);
 	}
 
 	@PostMapping("/GetAuditconfigUser")
-	public Map<String, Object> GetAuditconfigUser(@RequestBody LSaudittrailconfiguration LSaudittrailconfiguration) throws Exception{
+	public Map<String, Object> GetAuditconfigUser(@RequestBody LSaudittrailconfiguration LSaudittrailconfiguration)throws Exception {
 		return auditService.GetAuditconfigUser(LSaudittrailconfiguration);
 	}
 
 	@PostMapping("/SaveAuditconfigUser")
-	public List<LSaudittrailconfiguration> SaveAuditconfigUser(@RequestBody LSaudittrailconfiguration[] lsAudit) throws Exception{
+	public List<LSaudittrailconfiguration> SaveAuditconfigUser(@RequestBody LSaudittrailconfiguration[] lsAudit)throws Exception {
 		return auditService.SaveAuditconfigUser(lsAudit);
 	}
 
@@ -93,52 +74,20 @@ public class AuditTrailController {
 			throws ParseException {
 		return auditService.GetCFRTransactions(objCFRFilter);
 	}
-	
-	@PostMapping("/GetCFRTransactionsdid")
-	public List<LScfttransaction> GetCFRTransactionsdid(@RequestBody Map<String, Object> objCFRFilter)
-			throws ParseException {
-		return auditService.GetCFRTransactionsdid(objCFRFilter);
-	}
 
 	@PostMapping("/CheckUserPassWord")
-	public LSuserMaster CheckUserPassWord(@RequestBody LoggedUser objuser) throws Exception{
+	public LSuserMaster CheckUserPassWord(@RequestBody LoggedUser objuser)throws Exception {
 		return auditService.CheckUserPassWord(objuser);
 	}
 
 	@PostMapping("/ReviewBtnValidation")
-	public List<LSreviewdetails> ReviewBtnValidation(@RequestBody LSreviewdetails[] objreview) throws Exception{
-
-//		if(objreview.get(0).getObjuser() != null) {
-//			
-//			LSuserMaster userClass = auditService.CheckUserPassWord(objreview.get(0).getObjuser());
-//			
-//			if(userClass.getObjResponse().getStatus()) {
-//				
-//				objreview.get(0).setLsusermaster(userClass);
-
-//				return auditService.ReviewBtnValidation(objreview);
-//			}
-//			else
-//			{
-//				objreview.get(0).getObjsilentaudit().setComments("Entered invalid username and password");
-//				Map<String, Object> map=new HashMap<>();
-//				map.put("objsilentaudit",objreview.get(0).getObjsilentaudit());
-//				map.put("objmanualaudit",objreview.get(0).getObjmanualaudit());
-//				map.put("objUser",objreview.get(0).getObjuser());
-//				auditService.AuditConfigurationrecord(map);
-//				objreview.get(0).setResponse(new Response());
-//				objreview.get(0).getResponse().setStatus(false);
-//				objreview.get(0).getResponse().setInformation("ID_VALIDATION");
-//				return objreview;
-//			}
-//			
-//		}
+	public List<LSreviewdetails> ReviewBtnValidation(@RequestBody LSreviewdetails[] objreview)throws Exception {
 
 		return auditService.ReviewBtnValidation(objreview);
 	}
 
 	@PostMapping("/GetReviewDetails")
-	public List<LSreviewdetails> GetReviewDetails(@RequestBody List<LSreviewdetails> objreviewdetails) throws Exception{
+	public List<LSreviewdetails> GetReviewDetails(@RequestBody List<LSreviewdetails> objreviewdetails)throws Exception {
 
 		if (objreviewdetails.get(0).getObjuser() != null) {
 
@@ -157,38 +106,9 @@ public class AuditTrailController {
 	}
 
 	@PostMapping("/GetReviewDetails12")
-	public Map<String, Object> GetReviewDetails12(@RequestBody LSreviewdetails[] objreviewdetails) throws Exception{
+	public Map<String, Object> GetReviewDetails12(@RequestBody LSreviewdetails[] objreviewdetails)throws Exception {
 		Response objResponse = new Response();
 		Map<String, Object> objreview = new HashMap<String, Object>();
-//		if(objreviewdetails.get(0).getObjuser() != null) {
-//			
-//			LSuserMaster userClass = auditService.CheckUserPassWord(objreviewdetails.get(0).getObjuser());
-//			
-//			if(userClass.getObjResponse().getStatus()) {
-//				
-//				objreviewdetails.get(0).setLsusermaster(userClass);
-//				objreview.put("transaction", auditService.GetReviewDetails12(objreviewdetails));
-//				objResponse.setStatus(true);
-//				objreview.put("objResponse",objResponse);
-//				return objreview;
-//			}
-//			
-//			else
-//			{
-//				
-//				objreviewdetails.get(0).getObjsilentaudit().setComments("Entered invalid username and password");
-//				Map<String, Object> map=new HashMap<>();
-//			  	map.put("objsilentaudit",objreviewdetails.get(0).getObjsilentaudit());
-//			  	map.put("objmanualaudit",objreviewdetails.get(0).getObjmanualaudit());
-//			    map.put("objUser",objreviewdetails.get(0).getObjuser());
-//		     	auditService.AuditConfigurationrecord(map);
-//				objResponse.setStatus(false);
-//				objResponse.setInformation("ID_VALIDATION");
-//				objreview.put("objResponse",objResponse);
-//				return objreview;
-//			}
-//			
-//		}
 
 		objreview.put("transaction", auditService.GetReviewDetails12(objreviewdetails));
 		objResponse.setStatus(true);
@@ -253,9 +173,11 @@ public class AuditTrailController {
 			return rMap;
 
 		} else {
-			if (commonfunction.checkuseronmanualaudit(objuser.getEncryptedpassword(), objuser.getsPassword()))  {
+			if (commonfunction.checkuseronmanualaudit(objuser.getEncryptedpassword(), objuser.getsPassword())) {
 				rMap.put("audit", true);
 				rMap.put("objuser", reqMap.get("valuePass"));
+				
+			
 				return rMap;
 			}
 
@@ -263,5 +185,11 @@ public class AuditTrailController {
 			rMap.put("objuser", reqMap.get("valuePass"));
 			return rMap;
 		}
+	}
+	
+		@PostMapping("/GetCFRTransactionsdid")
+	public List<LScfttransaction> GetCFRTransactionsdid(@RequestBody Map<String, Object> objCFRFilter)
+			throws ParseException {
+		return auditService.GetCFRTransactionsdid(objCFRFilter);
 	}
 }

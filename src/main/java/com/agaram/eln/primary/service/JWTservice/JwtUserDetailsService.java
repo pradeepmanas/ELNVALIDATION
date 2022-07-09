@@ -67,6 +67,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 			user = userDao.findByUsernameIgnoreCaseAndLssitemaster(usernamevalue, objsite);
 		}
 //		LSuserMaster user = userDao.findByUsernameIgnoreCaseAndLssitemasterAndUserretirestatusNot(usernamevalue, objsite,1);
+		
 		try {
 			if (user == null) {
 				throw new UsernameNotFoundException("User not found with username: " + username);

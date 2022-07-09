@@ -62,7 +62,7 @@ public class ArchiveService {
 //			objcfrArchiveHistory.getObjsilentaudit().setActions("Archive");
 //			objcfrArchiveHistory.getObjsilentaudit().setSystemcoments("System Generated");
 			objcfrArchiveHistory.getObjsilentaudit().setTableName("LScfrArchiveHistory");
-			lscfttransactionRepository.save(objcfrArchiveHistory.getObjsilentaudit());
+//			lscfttransactionRepository.save(objcfrArchiveHistory.getObjsilentaudit());
     	}
 		
 		return lscfttransactionRepository.findAll();
@@ -93,7 +93,7 @@ public class ArchiveService {
 //			objcfrArchiveHistory.getObjsilentaudit().setActions("Archive");
 //			objcfrArchiveHistory.getObjsilentaudit().setSystemcoments("System Generated");
 			objuser.getObjsilentaudit().setTableName("LScfrArchiveHistory");
-			lscfttransactionRepository.save(objuser.getObjsilentaudit());
+//			lscfttransactionRepository.save(objuser.getObjsilentaudit());
     	}
 		return lstarchivehistory;
 	}
@@ -108,14 +108,14 @@ public class ArchiveService {
 //			objcfrArchiveHistory.getObjsilentaudit().setActions("Archive");
 //			objcfrArchiveHistory.getObjsilentaudit().setSystemcoments("System Generated");
 			objHistroy.getObjsilentaudit().setTableName("LScfrArchiveHistory");
-			lscfttransactionRepository.save(objHistroy.getObjsilentaudit());
+			//lscfttransactionRepository.save(objHistroy.getObjsilentaudit());
     	}
 		if(objHistroy.getObjuser() != null)
     	{
 			objHistroy.getObjmanualaudit().setActions("OpenArchive");
-			objHistroy.getObjmanualaudit().setComments(objHistroy.getObjuser().getComments());
+			//objHistroy.getObjmanualaudit().setComments(objHistroy.getObjuser().getComments());
 			objHistroy.getObjmanualaudit().setTableName("LScfrArchiveHistory");
-			lscfttransactionRepository.save(objHistroy.getObjmanualaudit());
+			//lscfttransactionRepository.save(objHistroy.getObjmanualaudit());
     	}
 		return lstarchivedata;
 	}

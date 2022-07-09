@@ -1,6 +1,7 @@
 package com.agaram.eln.primary.controller.sheetManipulation;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -96,17 +97,17 @@ public class FileController {
 	}
 
 	@PostMapping("/GetfilesOnTestcode")
-	public List<Sheettemplateget> GetfilesOnTestcode(@RequestBody LSfiletest objtest)throws Exception {
+	public List<Sheettemplateget> GetfilesOnTestcode(@RequestBody LSfiletest objtest) {
 		return fileService.GetfilesOnTestcode(objtest);
 	}
 
 	@PostMapping("/GetUnapprovedsheets")
-	public List<LSfile> GetUnapprovedsheets(@RequestBody LSuserMaster objuser)throws Exception {
+	public List<LSfile> GetUnapprovedsheets(@RequestBody LSuserMaster objuser) {
 		return fileService.GetApprovedSheets(0, objuser);
 	}
 
 	@PostMapping("/InsertUpdateWorkflow")
-	public List<LSworkflow> InsertUpdateWorkflow(@RequestBody LSworkflow[] workflow)throws Exception {
+	public List<LSworkflow> InsertUpdateWorkflow(@RequestBody LSworkflow[] workflow) {
 
 //		if(lstworkflow.get(0).getObjuser()!= null) {
 //			
@@ -135,27 +136,27 @@ public class FileController {
 	}
 
 	@PostMapping("/GetWorkflow")
-	public List<LSworkflow> GetWorkflow(@RequestBody LSworkflow objflow)throws Exception {
+	public List<LSworkflow> GetWorkflow(@RequestBody LSworkflow objflow) {
 		return fileService.GetWorkflow(objflow);
 	}
 
 	@PostMapping("/Deleteworkflow")
-	public Response Deleteworkflow(@RequestBody LSworkflow objflow)throws Exception {
+	public Response Deleteworkflow(@RequestBody LSworkflow objflow) {
 		return fileService.Deleteworkflow(objflow);
 	}
 
 	@PostMapping("/GetMastersfororders")
-	public Map<String, Object> GetMastersfororders(@RequestBody LSuserMaster objuser)throws Exception {
+	public Map<String, Object> GetMastersfororders(@RequestBody LSuserMaster objuser) {
 		return fileService.GetMastersfororders(objuser);
 	}
 
 	@PostMapping("/GetMastersforsheetsetting")
-	public Map<String, Object> GetMastersforsheetsetting(@RequestBody LSuserMaster objuser)throws Exception {
+	public Map<String, Object> GetMastersforsheetsetting(@RequestBody LSuserMaster objuser) {
 		return fileService.GetMastersforsheetsetting(objuser);
 	}
 
 	@PostMapping("/InsertUpdatesheetWorkflow")
-	public List<LSsheetworkflow> InsertUpdatesheetWorkflow(@RequestBody LSsheetworkflow[] sheetworkflow)throws Exception {
+	public List<LSsheetworkflow> InsertUpdatesheetWorkflow(@RequestBody LSsheetworkflow[] sheetworkflow) {
 
 //		if(lstsheetworkflow.get(0).getObjuser()!= null) {
 //			
@@ -201,97 +202,13 @@ public class FileController {
 
 	@RequestMapping(value = "/lockorder")
 	public Map<String, Object> lockorder(@RequestBody Map<String, Object> objMap) throws Exception {
-//		LoggedUser objuser = new LoggedUser();
-//		Response response = new Response();
-//		ObjectMapper mapper = new ObjectMapper();
-//		LScfttransaction objsilentaudit = new LScfttransaction();
-//		LScfttransaction objmanualaudit = new LScfttransaction();
-//		
-//		if(objMap.containsKey("objuser"))
-//		{
-//			objuser = mapper.convertValue(objMap.get("objuser"),LoggedUser.class);
-//		}
-//		
-//		if(objMap.containsKey("objsilentaudit"))
-//		{
-//			objsilentaudit = mapper.convertValue(objMap.get("objsilentaudit"),LScfttransaction.class);
-//		}
-//		if(objMap.containsKey("objmanualaudit"))
-//		{
-//			objmanualaudit = mapper.convertValue(objMap.get("objmanualaudit"),LScfttransaction.class);
-//		}
-//		
-//		if(objuser.getsUsername() != null) {
-//			
-//			LSuserMaster userClass = auditService.CheckUserPassWord(objuser);
-//			
-//			if(userClass.getObjResponse().getStatus()) {
-//				return fileService.lockorder(objMap);
-//			}
-//			else
-//			{
-//				objsilentaudit.setComments("Entered invalid username and password");
-//				Map<String, Object> map=new HashMap<>();
-//				map.put("objsilentaudit",objsilentaudit);
-//				map.put("objmanualaudit",objmanualaudit);
-//				map.put("objUser",objuser);
-//				auditService.AuditConfigurationrecord(map);
-//				
-//				response.setStatus(false);
-//				response.setInformation("ID_VALIDATION");
-//				map.put("response",response);
-//				return map;
-//			}
-//			
-//		}
+
 		return fileService.lockorder(objMap);
 	}
 
 	@RequestMapping(value = "/unlockorder")
 	public Map<String, Object> unlockorder(@RequestBody Map<String, Object> objMap) throws Exception {
-//		LoggedUser objuser = new LoggedUser();
-//		Response response = new Response();
-//		ObjectMapper mapper = new ObjectMapper();
-//		LScfttransaction objsilentaudit = new LScfttransaction();
-//		LScfttransaction objmanualaudit = new LScfttransaction();
-//		
-//		if(objMap.containsKey("objuser"))
-//		{
-//			objuser = mapper.convertValue(objMap.get("objuser"),LoggedUser.class);
-//		}
-//		
-//		if(objMap.containsKey("objsilentaudit"))
-//		{
-//			objsilentaudit = mapper.convertValue(objMap.get("objsilentaudit"),LScfttransaction.class);
-//		}
-//		if(objMap.containsKey("objmanualaudit"))
-//		{
-//			objmanualaudit = mapper.convertValue(objMap.get("objmanualaudit"),LScfttransaction.class);
-//		}
-//		
-//		if(objuser.getsUsername() != null) {
-//			
-//			LSuserMaster userClass = auditService.CheckUserPassWord(objuser);
-//			
-//			if(userClass.getObjResponse().getStatus()) {
-//				return fileService.unlockorder(objMap);
-//			}
-//			else
-//			{
-//				objsilentaudit.setComments("Entered invalid username and password");
-//				Map<String, Object> map=new HashMap<>();
-//				map.put("objsilentaudit",objsilentaudit);
-//				map.put("objmanualaudit",objmanualaudit);
-//				map.put("objUser",objuser);
-//				auditService.AuditConfigurationrecord(map);
-//				
-//				response.setStatus(false);
-//				response.setInformation("ID_VALIDATION");
-//				map.put("response",response);
-//				return map;
-//			}
-//			
-//		}
+
 		return fileService.unlockorder(objMap);
 	}
 
@@ -342,7 +259,7 @@ public class FileController {
 	}
 
 	@PostMapping("/Insertsharefileby")
-	public Map<String, Object> Insertsharefileby(@RequestBody Lsfilesharedby objprotocolordersharedby)throws Exception {
+	public Lsfilesharedby Insertsharefileby(@RequestBody Lsfilesharedby objprotocolordersharedby)throws Exception {
 		return fileService.Insertsharefileby(objprotocolordersharedby);
 	}
 
@@ -375,12 +292,12 @@ public class FileController {
 	public Boolean updateSharedToFile(@RequestBody Lsfileshareto lsordersharedby)throws Exception {
 		return fileService.updateSharedToFile(lsordersharedby);
 	}
-	
+
 	@PostMapping("/ValidateNotification")
-	public Notification ValidateNotification(@RequestBody Notification objnotification)throws Exception {
+	public Notification ValidateNotification(@RequestBody Notification objnotification) throws ParseException {
 		return fileService.ValidateNotification(objnotification);
 	}
-	
+
 	@PostMapping("/UploadLimsFile")
 	public Map<String, Object> UploadLimsFile(@RequestParam("file") MultipartFile file,
 			@RequestParam("order") Long batchcode, @RequestParam("filename") String filename) throws IOException {

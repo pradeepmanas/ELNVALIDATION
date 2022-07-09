@@ -14,6 +14,7 @@ import com.agaram.eln.primary.fetchmodel.getmasters.Samplemaster;
 import com.agaram.eln.primary.fetchmodel.getmasters.Testmaster;
 import com.agaram.eln.primary.fetchmodel.gettemplate.Sheettemplateget;
 import com.agaram.eln.primary.model.general.Response;
+import com.agaram.eln.primary.model.instrumentDetails.LSlogilablimsorderdetail;
 import com.agaram.eln.primary.model.instrumentDetails.Lselninstrumentfields;
 import com.agaram.eln.primary.model.instrumentDetails.Lselninstrumentmaster;
 import com.agaram.eln.primary.model.inventory.LSequipmentmap;
@@ -62,6 +63,7 @@ public class BaseMasterService {
 	private LSprojectmasterRepository lSprojectmasterRepository;
 
 	@Autowired
+
 	private LSmaterialmapRepository lSmaterialmapRepository;
 	@Autowired
 	private LSequipmentmapRepository lSequipmentmapRepository;
@@ -92,7 +94,7 @@ public class BaseMasterService {
 
 	@Autowired
 	private LSlogilablimsorderdetailRepository LSlogilablimsorderdetailRepository;
-	
+
 	@Autowired
 	private FileService fileService;
 
@@ -103,41 +105,42 @@ public class BaseMasterService {
 
 		return lStestmasterlocalRepository.findBystatusAndLssitemaster(1, objClass.getLssitemaster());
 	}
-	
+
 	public Map<String, Object> getTestwithsheet(LSuserMaster objClass) {
-		Map<String, Object> map =new HashMap<String, Object>();
-		
-		List<Testmaster> lstTest = lStestmasterlocalRepository.findBystatusAndLssitemaster(1, objClass.getLssitemaster());
-		
+		Map<String, Object> map = new HashMap<String, Object>();
+
+		List<Testmaster> lstTest = lStestmasterlocalRepository.findBystatusAndLssitemaster(1,
+				objClass.getLssitemaster());
+
 		map.put("Test", lstTest);
-		
+
 		LSfiletest objTest = new LSfiletest();
-		
+
 		List<Sheettemplateget> lstSheet = new ArrayList<Sheettemplateget>();
-		
+
 		List<LSprotocolmaster> lstP = new ArrayList<LSprotocolmaster>();
-		
-		if(lstTest != null && lstTest.size()>0) {
-			
+
+		if (lstTest != null && lstTest.size() > 0) {
+
 			objTest.setTestcode(lstTest.get(0).getTestcode());
 			objTest.setTesttype(1);
 			objTest.setIsmultitenant(objClass.getIsmultitenant());
 			objTest.setObjLoggeduser(objClass);
-			
+
 			lstSheet = fileService.GetfilesOnTestcode(objTest);
-			
+
 			LSprotocolmastertest obj1 = new LSprotocolmastertest();
-			
+
 			obj1.setTestcode(lstTest.get(0).getTestcode());
 			obj1.setTesttype(1);
 			obj1.setObjLoggeduser(objClass);
-			
+
 			lstP = ProtocolMasterService.getProtocolOnTestcode(obj1);
-			
+
 		}
 		map.put("Protocol", lstP);
 		map.put("Sheet", lstSheet);
-		
+
 		return map;
 	}
 
@@ -154,7 +157,7 @@ public class BaseMasterService {
 
 		if (objClass.getObjsilentaudit() != null) {
 			objClass.getObjsilentaudit().setTableName("LSsamplemaster");
-			lscfttransactionRepository.save(objClass.getObjsilentaudit());
+//			lscfttransactionRepository.save(objClass.getObjsilentaudit());
 		}
 
 		return lSsamplemasterRepository.findBystatusAndLssitemaster(1, objClass.getLssitemaster());
@@ -164,7 +167,7 @@ public class BaseMasterService {
 
 		if (objClass.getObjsilentaudit() != null) {
 			objClass.getObjsilentaudit().setTableName("LSprojectmaster");
-			lscfttransactionRepository.save(objClass.getObjsilentaudit());
+//			lscfttransactionRepository.save(objClass.getObjsilentaudit());
 		}
 
 		return lSprojectmasterRepository.findBystatusAndLssitemaster(1, objClass.getLssitemaster());
@@ -178,38 +181,30 @@ public class BaseMasterService {
 						1, objClass.getLssitemaster()) != null) {
 			objClass.getResponse().setStatus(false);
 			objClass.getResponse().setInformation("ID_EXIST");
-			if (objClass.getObjsilentaudit() != null) {
-				objClass.getObjsilentaudit().setActions("Warning");
-				objClass.getObjsilentaudit().setComments(
-						objClass.getModifiedby().getUsername() + " " + "made attempt to create existing test");
-				objClass.getObjsilentaudit().setTableName("LStestmasterlocal");
-			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LScfttransaction");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-			}
+			
 			return objClass;
 		} else if (objClass.getTestcode() != null
 				&& lStestmasterlocalRepository.findByTestnameIgnoreCaseAndStatusAndTestcodeNotAndLssitemaster(
 						objClass.getTestname(), 1, objClass.getTestcode(), objClass.getLssitemaster()) != null) {
 			objClass.getResponse().setStatus(false);
 			objClass.getResponse().setInformation("ID_EXIST");
-			if (objClass.getObjsilentaudit() != null) {
-				objClass.getObjsilentaudit().setActions("Warning");
-				objClass.getObjsilentaudit().setComments(
-						objClass.getModifiedby().getUsername() + " " + "made attempt to create existing test");
-				objClass.getObjsilentaudit().setTableName("LStestmasterlocal");
-			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LStestmasterlocal");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-			}
+			
 			return objClass;
 		}
+		
+		if(objClass.getStatus() == -1 && objClass.getTestcode() != null) {
+			
+			List<LSlogilablimsorderdetail> objOrderLst = LSlogilablimsorderdetailRepository.findByTestcode(objClass.getTestcode());
+			
+			if(!objOrderLst.isEmpty()) {
+				objClass.getResponse().setStatus(false);
+				objClass.getResponse().setInformation("IDS_SAMPLETRANSACTION");
+
+				return objClass;
+			}	
+			
+		}
+		
 		lStestmasterlocalRepository.save(objClass);
 
 		if (objClass.getLSmaterial() != null) {
@@ -233,16 +228,6 @@ public class BaseMasterService {
 		objClass.getResponse().setStatus(true);
 		objClass.getResponse().setInformation("");
 
-		if (objClass.getObjsilentaudit() != null) {
-			objClass.getObjsilentaudit().setTableName("LStestmasterlocal");
-		}
-
-		// Manual Audit
-		if (objClass.getObjuser() != null) {
-			objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-			objClass.getObjmanualaudit().setTableName("LStestmasterlocal");
-		}
-
 		return objClass;
 	}
 
@@ -254,58 +239,32 @@ public class BaseMasterService {
 						1, objClass.getLssitemaster()) != null) {
 			objClass.getResponse().setStatus(false);
 			objClass.getResponse().setInformation("ID_EXIST");
-			if (objClass.getObjsilentaudit() != null) {
-				objClass.getObjsilentaudit().setActions("Warning");
-				objClass.getObjsilentaudit().setComments(
-						objClass.getModifiedby().getUsername() + " " + "made attempt to create existing sample");
-				objClass.getObjsilentaudit().setTableName("LSusergroup");
 
-			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LScfttransaction");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-
-			}
 			return objClass;
 		} else if (objClass.getSamplecode() != null
 				&& lSsamplemasterRepository.findBySamplenameIgnoreCaseAndStatusAndSamplecodeNotAndLssitemaster(
 						objClass.getSamplename(), 1, objClass.getSamplecode(), objClass.getLssitemaster()) != null) {
 			objClass.getResponse().setStatus(false);
 			objClass.getResponse().setInformation("ID_EXIST");
-			if (objClass.getObjsilentaudit() != null) {
-				objClass.getObjsilentaudit().setActions("Warning");
-				objClass.getObjsilentaudit().setComments(
-						objClass.getModifiedby().getUsername() + " " + "made attempt to create existing sample");
-				objClass.getObjsilentaudit().setTableName("LSusergroup");
 
-			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LScfttransaction");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-
-			}
 			return objClass;
 		}
+		
+		if(objClass.getStatus() == -1 && objClass.getSamplecode() != null) {
+			
+			List<LSlogilablimsorderdetail> objOrderLst = LSlogilablimsorderdetailRepository.findByLssamplemaster(objClass);
+			
+			if(!objOrderLst.isEmpty()) {
+				objClass.getResponse().setStatus(false);
+				objClass.getResponse().setInformation("IDS_SAMPLETRANSACTION");
+
+				return objClass;
+			}	
+		}
+		
 		lSsamplemasterRepository.save(objClass);
 		objClass.getResponse().setStatus(true);
 		objClass.getResponse().setInformation("");
-
-		// silent AuditTrail
-		if (objClass.getObjsilentaudit() != null) {
-			objClass.getObjsilentaudit().setTableName("LSsamplemaster");
-
-		}
-
-		// Manual Audit
-		if (objClass.getObjuser() != null) {
-			objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-			objClass.getObjmanualaudit().setTableName("LSsamplemaster");
-
-		}
 
 		return objClass;
 	}
@@ -326,13 +285,7 @@ public class BaseMasterService {
 				objClass.getObjsilentaudit().setTableName("LSusergroup");
 
 			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LScfttransaction");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
 
-			}
 			return objClass;
 		}
 
@@ -347,13 +300,7 @@ public class BaseMasterService {
 				objClass.getObjsilentaudit().setTableName("LSusergroup");
 
 			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LScfttransaction");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
 
-			}
 			return objClass;
 		}
 
@@ -369,31 +316,13 @@ public class BaseMasterService {
 				objClass.getObjsilentaudit().setTableName("LSusergroup");
 
 			}
-//			manual audit
-			if (objClass.getObjuser() != null) {
-				objClass.getObjmanualaudit().setActions("Warning");
-				objClass.getObjmanualaudit().setTableName("LScfttransaction");
-				objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
 
-			}
 			return objClass;
 		}
 
 		lSprojectmasterRepository.save(objClass);
 		objClass.getResponse().setStatus(true);
 		objClass.getResponse().setInformation("");
-
-		// silent Audit
-		if (objClass.getObjsilentaudit() != null) {
-			objClass.getObjsilentaudit().setTableName("LSprojectmaster");
-
-		}
-		// Manual Audit
-		if (objClass.getObjuser() != null) {
-			objClass.getObjmanualaudit().setComments(objClass.getObjuser().getComments());
-			objClass.getObjmanualaudit().setTableName("LSprojectmaster");
-
-		}
 
 		return objClass;
 	}
@@ -405,7 +334,7 @@ public class BaseMasterService {
 
 		if (objuser.getObjsilentaudit() != null) {
 			objuser.getObjsilentaudit().setTableName("LStestmaster");
-			lscfttransactionRepository.save(objuser.getObjsilentaudit());
+//			lscfttransactionRepository.save(objuser.getObjsilentaudit());
 		}
 		return mapOrders;
 	}
@@ -497,7 +426,7 @@ public class BaseMasterService {
 //		silent audit
 		if (objClass.getObjsilentaudit() != null) {
 			objClass.getObjsilentaudit().setTableName("Lselninstrumentmaster");
-			lscfttransactionRepository.save(objClass.getObjsilentaudit());
+//			lscfttransactionRepository.save(objClass.getObjsilentaudit());
 		}
 		return obj;
 	}
@@ -506,5 +435,4 @@ public class BaseMasterService {
 		return lstestmasterRepository.findByntestcode(objtest.getNtestcode());
 	}
 
-	
 }

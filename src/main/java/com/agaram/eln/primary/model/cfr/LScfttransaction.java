@@ -75,6 +75,15 @@ public class LScfttransaction {
 	}
 	@Transient
 	private String username;
+
+//	@ManyToOne 
+//	private LSreviewdetails LSreviewdetails;
+	
+//	@Transient
+//	private String ReviewStatus;
+	
+//	@Transient
+//	LoggedUser objuser;
 	
 	@Transient
 	private Date fromdate;
@@ -93,15 +102,6 @@ public class LScfttransaction {
 	}
 	@Transient
 	private Date todate;
-
-//	@ManyToOne 
-//	private LSreviewdetails LSreviewdetails;
-	
-//	@Transient
-//	private String ReviewStatus;
-	
-//	@Transient
-//	LoggedUser objuser;
 	
 	public String getUsername() {
 		return username;

@@ -1,5 +1,6 @@
 package com.agaram.eln.primary.controller.methodsetup;
 
+
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,8 +9,10 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import com.agaram.eln.primary.model.methodsetup.Method;
@@ -58,8 +61,7 @@ public class MethodController {
 	   * @return response entity of Newly added Method entity
 	   */
 	  @PostMapping(value = "/createMethod")
-	  public ResponseEntity<Object> createMethod(final HttpServletRequest request, 
-			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+	  public ResponseEntity<Object> createMethod(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();		
 		  final Method method = mapper.convertValue(mapObject.get("methodmaster"), Method.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -78,8 +80,7 @@ public class MethodController {
 	   * @return response entity of updated Method entity
 	   */
 	  @PostMapping(value = "/updateMethod")
-	  public ResponseEntity<Object> updateMethod(final HttpServletRequest request, 
-			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+	  public ResponseEntity<Object> updateMethod(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();	
 		  final Method method = mapper.convertValue(mapObject.get("methodmaster"), Method.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -100,8 +101,7 @@ public class MethodController {
 	   * @return Response Entity relevant to delete Method entity
 	   */
 	  @PostMapping(value = "/updateMethodStatus")
-	  public ResponseEntity<Object> deleteMethod(final HttpServletRequest request, 
-			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+	  public ResponseEntity<Object> deleteMethod(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();	
 		 
 		  final int methodKey = mapper.convertValue(mapObject.get("methodkey"), Integer.class);
@@ -110,9 +110,13 @@ public class MethodController {
 		  String someValue =  (String) mapObject.get("doneByUserKey");
 		  final int doneByUserKey = Integer.parseInt(someValue);
 		  final String comments = mapper.convertValue(mapObject.get("comments"), String.class);
+		  final Method otherdetails = mapper.convertValue(mapObject.get("otherdetails"), Method.class);
 		  
 		  return methodService.deleteMethod(methodKey, site, comments, doneByUserKey,
-				  saveAuditTrail, request);
+				  saveAuditTrail, request,otherdetails);
+		  
+//		  return methodService.deleteMethod(methodKey, site, comments, doneByUserKey,
+//				  saveAuditTrail, request);
 	  }
 	  
 	  /**
@@ -132,13 +136,53 @@ public class MethodController {
 	   * @return byte array of txt file
 	   */
 	  @PostMapping(value = "/getFileData")
-	  public ResponseEntity<Object> getFileData(@Valid @RequestBody Map<String, Object> mapObject)throws Exception{
+      public String getFileData(@Valid @RequestBody Map<String, Object> mapObject)throws Exception{
+		  
+		 // public ResponseEntity<Object>
+		//  public ResponseEntity<Object> getFileData(@Valid @RequestBody Map<String, Object> mapObject)throws Exception{
+		  
 		  final ObjectMapper mapper = new ObjectMapper();
-		  //final String fileName = mapper.convertValue(mapObject.get("rawDataFileName"), String.class);
+		
 		  Map<String, Object> objinput = (Map<String, Object>) mapObject.get("inputData");
 		  final String fileName = (String) objinput.get("rawDataFileName");
-		  return new ResponseEntity<>(methodService.getFileData(fileName), HttpStatus.OK);
-	  }	  
+	      String tenant = (String) objinput.get("X-TenantID");
+	      Integer isMultitenant = (Integer)objinput.get("isMultitenant");
+		  
+		//  return methodService.getFileData(fileName, tenant, HttpStatus.OK);
+		
+	
+			if(isMultitenant != 0) {
+				  return methodService.getFileData(fileName, tenant);
+				  }
+				else
+				{
+				 return methodService.getSQLFileData(fileName);
+				}
+			
+		//	return new ResponseEntity<>("Sample Split Done - "+ objinput, HttpStatus.OK);
+		}
+
+	 
+	
+
+	
+	  
+//	  @PostMapping(value = "/getFileData")
+//		  public ResponseEntity<Object> getFileData(@Valid @RequestBody Map<String, Object> mapObject)throws Exception{
+//
+//		
+//			  final ObjectMapper mapper = new ObjectMapper();
+//		
+//			  Map<String, Object> objinput = (Map<String, Object>) mapObject.get("inputData");
+//			  final String fileName = (String) objinput.get("rawDataFileName");
+//			  return new ResponseEntity<>(methodService.getFileData(fileName),HttpStatus.OK);
+//
+//
+//		  }	
+	  
+	  
+	  	  
+	  
 	  
 	
 	/**
@@ -150,10 +194,15 @@ public class MethodController {
 	 * loaded. 
 	 * @return response object with copied Method entity.
 	 */
-	@PostMapping(value = "/createCopyMethod")
-	public ResponseEntity<Object> createCopyMethod(final HttpServletRequest request, 
-				@Valid @RequestBody Map<String, Object> mapObject)throws Exception {	
-		 return methodService.createCopyMethod(request, mapObject);
+	  @PostMapping(value = "/createCopyMethod")
+	  public ResponseEntity<Object> createCopyMethod(final HttpServletRequest request, 
+				@Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+		
+		String strUserKey = (String) mapObject.get("doneByUserKey");
+		  
+		  final int doneByUserKey = Integer.parseInt(strUserKey);
+		  
+		 return methodService.createCopyMethod(request, mapObject,doneByUserKey);
 	}
 	
 	/**

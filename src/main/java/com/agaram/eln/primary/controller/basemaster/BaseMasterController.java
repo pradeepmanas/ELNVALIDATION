@@ -36,27 +36,27 @@ public class BaseMasterController {
 	 */
 	
 	@RequestMapping("/getTestmaster")
-	public List<Testmaster> getTestmaster(@RequestBody LSuserMaster objClass) throws Exception {
+	public List<Testmaster> getTestmaster(@RequestBody LSuserMaster objClass)throws Exception {
 		return masterService.getTestmaster(objClass);
 	}
 	
 	@RequestMapping("/getTestwithsheet")
-	public Map<String, Object> getTestwithsheet(@RequestBody LSuserMaster objClass) throws Exception {
+	public Map<String, Object> getTestwithsheet(@RequestBody LSuserMaster objClass)throws Exception {
 		return masterService.getTestwithsheet(objClass);
 	}
 	
 	@RequestMapping("/getLimsTestMaster")
-	public List<LStestmaster> getLimsTestMaster(@RequestBody LSuserMaster objClass) throws Exception{
+	public List<LStestmaster> getLimsTestMaster(@RequestBody LSuserMaster objClass)throws Exception {
 		return masterService.getLimsTestMaster(objClass);
 	}
 	
 	@RequestMapping("/getSamplemaster")
-	public List<Samplemaster> getsamplemaster(@RequestBody LSuserMaster objClass) throws Exception{
+	public List<Samplemaster> getsamplemaster(@RequestBody LSuserMaster objClass)throws Exception {
 		return masterService.getsamplemaster(objClass);
 	}
 	
 	@RequestMapping("/getProjectmaster")
-	public List<Projectmaster> getProjectmaster(@RequestBody LSuserMaster objClass) throws Exception{
+	public List<Projectmaster> getProjectmaster(@RequestBody LSuserMaster objClass)throws Exception {
 		return masterService.getProjectmaster(objClass);
 	}
 	
@@ -68,42 +68,42 @@ public class BaseMasterController {
 	 */
 	
 	@PostMapping("/InsertupdateTest")
-	public LStestmasterlocal InsertupdateTest(@RequestBody LStestmasterlocal objClass) throws Exception
+	public LStestmasterlocal InsertupdateTest(@RequestBody LStestmasterlocal objClass)throws Exception
 	{
 		return masterService.InsertupdateTest(objClass);
 	}
 	
 	@PostMapping("/InsertupdateSample")
-	public LSsamplemaster InsertupdateSample(@RequestBody LSsamplemaster objClass) throws Exception
+	public LSsamplemaster InsertupdateSample(@RequestBody LSsamplemaster objClass)throws Exception
 	{
 		return masterService.InsertupdateSample(objClass);
 	}
 	
 	@PostMapping("/InsertupdateProject")
-	public LSprojectmaster InsertupdateProject(@RequestBody LSprojectmaster objClass) throws Exception
+	public LSprojectmaster InsertupdateProject(@RequestBody LSprojectmaster objClass)throws Exception
 	{
 		return masterService.InsertupdateProject(objClass);
 	}
 	
 	@PostMapping("/GetMastersforTestMaster")
-	public Map<String, Object> GetMastersforTestMaster(@RequestBody LSuserMaster objuser) throws Exception
+	public Map<String, Object> GetMastersforTestMaster(@RequestBody LSuserMaster objuser)throws Exception
 	{
 		return masterService.GetMastersforTestMaster(objuser);
 	}
 	
 	@PostMapping("/InsertupdateInstrument")
-	public Lselninstrumentmaster InsertupdateInstrument(@RequestBody Lselninstrumentmaster objClass) throws Exception{
+	public Lselninstrumentmaster InsertupdateInstrument(@RequestBody Lselninstrumentmaster objClass)throws Exception {
                
 		return masterService.InsertupdateInstrument(objClass);
 	}
 	
 	@PostMapping("/GetInstrument")
-	public Map<String, Object> GetInstrument(@RequestBody Lselninstrumentmaster objClass) throws Exception{
+	public Map<String, Object> GetInstrument(@RequestBody Lselninstrumentmaster objClass)throws Exception {
 		return masterService.GetInstrument(objClass);
 	}
 	
 	@PostMapping("/GetTestonID")
-	public LStestmaster GetTestonID(@RequestBody LStestmaster objtest) throws Exception
+	public LStestmaster GetTestonID(@RequestBody LStestmaster objtest)throws Exception
 	{
 		return masterService.GetTestonID(objtest);
 	}

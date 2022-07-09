@@ -1,12 +1,20 @@
 package com.agaram.eln.primary.service.sheetManipulation;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.ArrayList;
-
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +22,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.agaram.eln.primary.commonfunction.commonfunction;
 import com.agaram.eln.primary.fetchmodel.gettemplate.Sheettemplateget;
-import com.agaram.eln.primary.model.cfr.LScfttransaction;
 import com.agaram.eln.primary.model.cloudFileManip.CloudSheetCreation;
 import com.agaram.eln.primary.model.cloudFileManip.CloudSheetVersion;
 import com.agaram.eln.primary.model.fileManipulation.SheetorderlimsRefrence;
@@ -41,7 +49,6 @@ import com.agaram.eln.primary.model.sheetManipulation.Lsfilesharedby;
 import com.agaram.eln.primary.model.sheetManipulation.Lsfileshareto;
 import com.agaram.eln.primary.model.sheetManipulation.Lssheetworkflowhistory;
 import com.agaram.eln.primary.model.sheetManipulation.Notification;
-
 import com.agaram.eln.primary.model.usermanagement.LSnotification;
 import com.agaram.eln.primary.model.usermanagement.LSuserMaster;
 import com.agaram.eln.primary.model.usermanagement.LSusersteam;
@@ -73,7 +80,7 @@ import com.agaram.eln.primary.repository.usermanagement.LSuserteammappingReposit
 import com.agaram.eln.primary.service.basemaster.BaseMasterService;
 import com.agaram.eln.primary.service.fileManipulation.FileManipulationservice;
 import com.agaram.eln.primary.service.masters.MasterService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.gridfs.GridFSDBFile;
 
 @Service
 @EnableJpaRepositories(basePackageClasses = LSfileRepository.class)
@@ -95,6 +102,7 @@ public class FileService {
 	private LSworkflowRepository lsworkflowRepository;
 
 	@Autowired
+
 	private LSnotificationRepository LSnotificationRepository;
 
 	@Autowired
@@ -153,40 +161,43 @@ public class FileService {
 
 	@Autowired
 	private MasterService inventoryservice;
-	
+
 	@Autowired
 	private NotificationRepository NotificationRepository;
-	
+
 	@Autowired
 	private LsSheetorderlimsrefrenceRepository lssheetorderlimsrefrenceRepository;
-	
+
 	@Autowired
 	private FileManipulationservice fileManipulationservice;
+
+	@Autowired
+	private GridFsTemplate gridFsTemplate;
 
 	public LSfile InsertupdateSheet(LSfile objfile) {
 		Boolean Isnew = false;
 		String Content = objfile.getFilecontent();
-		
+
 		if (objfile.getFilecode() == null
-				&& lSfileRepository.findByfilenameuserIgnoreCaseAndLssitemaster(objfile.getFilenameuser(),objfile.getLssitemaster()) != null)
-								
-				{
-			
+				&& lSfileRepository.findByfilenameuserIgnoreCaseAndLssitemaster(objfile.getFilenameuser(),
+						objfile.getLssitemaster()) != null)
+
+		{
+
 			objfile.setResponse(new Response());
 			objfile.getResponse().setStatus(false);
 			objfile.getResponse().setInformation("ID_SHEET");
 
-			return objfile;			
-	}
-	
-		
+			return objfile;
+		}
+
 		if (objfile.getLssheetworkflow() == null) {
 			objfile.setLssheetworkflow(lssheetworkflowRepository
 					.findTopByAndLssitemasterOrderByWorkflowcodeAsc(objfile.getLssitemaster()));
 		}
 
 		if (objfile.getFilecode() != null && objfile.getFilecode() > 0) {
-			UpdateSheetversion(objfile);
+			UpdateSheetversion(objfile, Content);
 
 			lSfilemethodRepository.deleteByfilecode(objfile.getFilecode());
 			List<Integer> lstestparamcode = new ArrayList<Integer>();
@@ -203,7 +214,7 @@ public class FileService {
 
 			Isnew = false;
 		} else {
-			
+
 			Isnew = true;
 		}
 
@@ -230,10 +241,9 @@ public class FileService {
 
 		objfile.setFilecontent(null);
 		lSfileRepository.save(objfile);
-		
-		if(Isnew)
-		{
-			UpdateSheetversion(objfile);
+
+		if (Isnew) {
+			UpdateSheetversion(objfile, Content);
 		}
 
 		updatefilecontent(Content, objfile, Isnew);
@@ -252,7 +262,7 @@ public class FileService {
 		objfile.getResponse().setStatus(true);
 		objfile.getResponse().setInformation("ID_SHEETMSG");
 
-		updatenotificationforsheet(objfile, true, null,objfile.getIsnewsheet());
+		updatenotificationforsheet(objfile, true, null, objfile.getIsnewsheet());
 
 		return objfile;
 	}
@@ -265,23 +275,13 @@ public class FileService {
 			objsavefile.setContent(Content);
 			cloudSheetCreationRepository.save(objsavefile);
 		} else {
-			SheetCreation objsavefile = new SheetCreation();
-			objsavefile.setId((long) objfile.getFilecode());
-			objsavefile.setContent(Content);
 
-			// build query
-			Query query = new Query(Criteria.where("id").is(objsavefile.getId()));
-
-			Boolean recordcount = mongoTemplate.exists(query, SheetCreation.class);
-
-			if (Isnew || !recordcount) {
-				mongoTemplate.insert(objsavefile);
-			} else {
-				Update update = new Update();
-				update.set("content", Content);
-
-				mongoTemplate.upsert(query, update, SheetCreation.class);
+			String fileid = "file_" + objfile.getFilecode();
+			GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+			if (largefile != null) {
+				gridFsTemplate.delete(new Query(Criteria.where("filename").is(fileid)));
 			}
+			gridFsTemplate.store(new ByteArrayInputStream(Content.getBytes()), fileid);
 		}
 
 	}
@@ -408,21 +408,6 @@ public class FileService {
 			}
 		}
 
-		if (lsfiles != null && lsfiles.size() > 0) {
-
-			if (objtest.getIsmultitenant() == 1) {
-				CloudSheetCreation file = cloudSheetCreationRepository.findById((long) lsfiles.get(0).getFilecode());
-				if (file != null) {
-					lsfiles.get(0).setFilecontent(file.getContent());
-				}
-			} else {
-				SheetCreation file = mongoTemplate.findById(lsfiles.get(0).getFilecode(), SheetCreation.class);
-				if (file != null) {
-					lsfiles.get(0).setFilecontent(file.getContent());
-				}
-			}
-		}
-
 		return lsfiles;
 	}
 
@@ -432,23 +417,7 @@ public class FileService {
 			lsworkflowgroupmappingRepository.save(flow.getLsworkflowgroupmapping());
 			lsworkflowRepository.save(flow);
 		}
-		// silent audit
-//		if (lstworkflow.get(0).getObjsilentaudit() != null) {
-//			lstworkflow.get(0).getObjsilentaudit().setTableName("lsworkflow");
-//			lscfttransactionRepository.save(lstworkflow.get(0).getObjsilentaudit());
-//		}
-//		// Manual Audit
-//		if (lstworkflow.get(0).getObjuser() != null) {
-////			Date date = new Date();
-//
-//			lstworkflow.get(0).getObjmanualaudit().setComments(lstworkflow.get(0).getObjuser().getComments());
-//			lstworkflow.get(0).getObjmanualaudit().setTableName("LSworkflow");
-//			lstworkflow.get(0).getObjmanualaudit().setLsuserMaster(lstworkflow.get(0).getLSuserMaster().getUsercode());
-//			lstworkflow.get(0).getObjmanualaudit()
-//					.setLssitemaster(lstworkflow.get(0).getLSuserMaster().getLssitemaster().getSitecode());
-////			lstworkflow.get(0).getObjmanualaudit().setTransactiondate(date);
-//			lscfttransactionRepository.save(lstworkflow.get(0).getObjmanualaudit());
-//		}
+		
 		lstworkflow1.get(0).setResponse(new Response());
 		lstworkflow1.get(0).getResponse().setStatus(true);
 		lstworkflow1.get(0).getResponse().setInformation("ID_SHEETMSG");
@@ -480,10 +449,6 @@ public class FileService {
 			lsworkflowgroupmappingRepository.delete(objflow.getLsworkflowgroupmapping());
 			response.setStatus(true);
 
-			if (objflow.getObjsilentaudit() != null) {
-				objflow.getObjsilentaudit().setTableName("LSworkflow");
-//				lscfttransactionRepository.save(objflow.getObjsilentaudit());
-			}
 		}
 
 		return response;
@@ -495,6 +460,7 @@ public class FileService {
 		mapOrders.put("test", masterService.getTestmaster(objuser));
 		mapOrders.put("sample", masterService.getsamplemaster(objuser));
 		mapOrders.put("project", masterService.getProjectmaster(objuser));
+
 		Lsrepositories lsrepositories = new Lsrepositories();
 		lsrepositories.setSitecode(objuser.getLssitemaster().getSitecode());
 		mapOrders.put("inventories", inventoryservice.Getallrepositories(lsrepositories));
@@ -524,22 +490,7 @@ public class FileService {
 			lssheetworkflowRepository.save(flow);
 		}
 
-		if (lSsheetworkflow.get(0).getObjsilentaudit() != null) {
-			lSsheetworkflow.get(0).getObjsilentaudit().setTableName("LSfiletest");
-//			lscfttransactionRepository.save(lSsheetworkflow.get(0).getObjsilentaudit());
-		}
-
-//		if (lSsheetworkflow.get(0).getObjuser() != null) {
-//
-//
-//			lSsheetworkflow.get(0).getObjmanualaudit().setComments(lSsheetworkflow.get(0).getObjuser().getComments());
-//			lSsheetworkflow.get(0).getObjmanualaudit().setTableName("LSsheetworkflow");
-//			lSsheetworkflow.get(0).getObjmanualaudit()
-//					.setLsuserMaster(lSsheetworkflow.get(0).getObjuser().getUsercode());
-//			lSsheetworkflow.get(0).getObjmanualaudit()
-//					.setLssitemaster(lSsheetworkflow.get(0).getLSuserMaster().getLssitemaster().getSitecode());
-////			lscfttransactionRepository.save(lSsheetworkflow.get(0).getObjmanualaudit());
-//		}
+		
 		lSsheetworkflow.get(0).setResponse(new Response());
 		lSsheetworkflow.get(0).getResponse().setStatus(true);
 		lSsheetworkflow.get(0).getResponse().setInformation("ID_SHEETMSG");
@@ -578,11 +529,10 @@ public class FileService {
 	}
 
 	public LSfile updateworkflowforFile(LSfile objfile) {
-		
-		LSfile objcurrentfile = lSfileRepository.findByfilecode(objfile.getFilecode());
-		
-		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow(),false);
 
+		LSfile objcurrentfile = lSfileRepository.findByfilecode(objfile.getFilecode());
+
+		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow(), false);
 
 		lssheetworkflowhistoryRepository.save(objfile.getLssheetworkflowhistory());
 		lSfileRepository.updateFileWorkflow(objfile.getLssheetworkflow(), objfile.getApproved(), objfile.getRejected(),
@@ -597,11 +547,13 @@ public class FileService {
 					.get(objfile.getLssheetworkflowhistory().size() - 1).getObjsilentaudit());
 		}
 
-	
+//		updatenotificationforsheet(objfile, false, objcurrentfile.getLssheetworkflow(), false);
+
 		return objfile;
 	}
 
-	public void updatenotificationforsheet(LSfile objFile, Boolean isNew, LSsheetworkflow previousworkflow,Boolean IsNewsheet) {
+	public void updatenotificationforsheet(LSfile objFile, Boolean isNew, LSsheetworkflow previousworkflow,
+			Boolean IsNewsheet) {
 		try {
 			List<LSuserteammapping> objteam = lsuserteammappingRepository
 					.findByTeamcodeNotNullAndLsuserMaster(objFile.getLSuserMaster());
@@ -638,17 +590,17 @@ public class FileService {
 						LSusersteam objteam1 = LSusersteamRepository.findByteamcode(objteam.get(i).getTeamcode());
 
 						List<LSuserteammapping> lstusers = objteam1.getLsuserteammapping();
-
+	
 						for (int j = 0; j < lstusers.size(); j++) {
 
 							if (objFile.getObjLoggeduser().getUsercode() != lstusers.get(j).getLsuserMaster()
 									.getUsercode()) {
 								LSnotification objnotify = new LSnotification();
-								if(IsNewsheet) {
+								if (IsNewsheet) {
 									objnotify.setNotificationdate(objFile.getCreatedate());
-								}else if(!IsNewsheet){
+								} else if (!IsNewsheet) {
 									objnotify.setNotificationdate(objFile.getModifieddate());
-								}else {
+								} else {
 									objnotify.setNotificationdate(objFile.getCreatedate());
 								}
 								objnotify.setNotifationfrom(objFile.getLSuserMaster());
@@ -663,8 +615,8 @@ public class FileService {
 							}
 						}
 					}
-				} else if(IsNewsheet) {
-					Notifiction =IsNewsheet == true ?"SHEETCREATED":"SHEETMODIFIED";
+				} else {
+					Notifiction = IsNewsheet == true ? "SHEETCREATED" : "SHEETMODIFIED";
 					Details = "{\"ordercode\":\"" + objFile.getFilecode() + "\", \"order\":\""
 							+ objFile.getFilenameuser() + "\", \"previousworkflow\":\"" + ""
 							+ "\", \"previousworkflowcode\":\"" + -1 + "\", \"currentworkflow\":\""
@@ -680,19 +632,18 @@ public class FileService {
 
 							if (objFile.getLSuserMaster().getUsercode() != lstusers.get(j).getLsuserMaster()
 									.getUsercode()) {
-							
-								
+
 								LSnotification objnotify = new LSnotification();
-								if(IsNewsheet) {
+								if (IsNewsheet) {
 									objnotify.setNotificationdate(objFile.getCreatedate());
-								}else if(!IsNewsheet){
+								} else if (!IsNewsheet) {
 									objnotify.setNotificationdate(objFile.getModifieddate());
-								}else {
+								} else {
 									objnotify.setNotificationdate(objFile.getCreatedate());
 								}
 								objnotify.setNotifationfrom(objFile.getLSuserMaster());
 								objnotify.setNotifationto(lstusers.get(j).getLsuserMaster());
-								
+								objnotify.setNotificationdate(objFile.getCreatedate());
 								objnotify.setNotification(Notifiction);
 								objnotify.setNotificationdetils(Details);
 								objnotify.setIsnewnotification(1);
@@ -715,22 +666,16 @@ public class FileService {
 
 		Long BatchID = null;
 		int usercode = 0;
-		@SuppressWarnings("unused")
-		LScfttransaction cfttransaction;
-		ObjectMapper objMapper = new ObjectMapper();
-
+		String username = "";
+		;
 		if (objMap.containsKey("Batch")) {
 			BatchID = Long.valueOf((Integer) objMap.get("Batch"));
 		}
 		if (objMap.containsKey("usercode")) {
 			usercode = (Integer) objMap.get("usercode");
 		}
-
-		if (objMap.containsKey("objsilentaudit")) {
-
-			cfttransaction = objMapper.convertValue(objMap.get("objsilentaudit"), LScfttransaction.class);
-//			lscfttransactionRepository.save(cfttransaction);
-
+		if (objMap.containsKey("username")) {
+			username = (String) objMap.get("username");
 		}
 		LSlogilablimsorderdetail orderDetail = LSlogilablimsorderdetailRepository.findOne(BatchID);
 		Integer sLockeduser = 0;
@@ -740,6 +685,7 @@ public class FileService {
 			if (sLockeduser == null || sLockeduser == 0) {
 
 				orderDetail.setLockeduser(usercode);
+				orderDetail.setLockedusername(username);
 
 				LSlogilablimsorderdetailRepository.save(orderDetail);
 
@@ -764,23 +710,17 @@ public class FileService {
 	@SuppressWarnings("null")
 	public Map<String, Object> unlockorder(Map<String, Object> objMap) throws Exception {
 		Long BatchID = null;
-		LScfttransaction cfttransaction;
-		ObjectMapper objMapper = new ObjectMapper();
 
 		if (objMap.containsKey("Batch")) {
 			BatchID = Long.valueOf((Integer) objMap.get("Batch"));
 		}
-		if (objMap.containsKey("objsilentaudit")) {
 
-			cfttransaction = objMapper.convertValue(objMap.get("objsilentaudit"), LScfttransaction.class);
-			lscfttransactionRepository.save(cfttransaction);
-
-		}
 		LSlogilablimsorderdetail orderDetail = LSlogilablimsorderdetailRepository.findOne(BatchID);
 
 		if (orderDetail != null) {
 
 			orderDetail.setLockeduser(null);
+			orderDetail.setLockedusername(null);
 
 			LSlogilablimsorderdetailRepository.save(orderDetail);
 
@@ -798,15 +738,13 @@ public class FileService {
 		return objMap;
 	}
 
-	public boolean UpdateSheetversion(LSfile objfile) {
+	public boolean UpdateSheetversion(LSfile objfile, String orginalcontent) {
 		int Versionnumber = 0;
 		LSfileversion objLatestversion = lsfileversionRepository
 				.findFirstByFilecodeOrderByVersionnoDesc(objfile.getFilecode());
 		if (objLatestversion != null) {
 			Versionnumber = objLatestversion.getVersionno();
 		}
-
-		// Versionnumber++;
 
 		LSfile objesixting = lSfileRepository.findByfilecode(objfile.getFilecode());
 		if (objesixting == null) {
@@ -850,7 +788,6 @@ public class FileService {
 			objversion.setCreatedate(objesixting.getCreatedate());
 			objversion.setExtension(objesixting.getExtension());
 			objversion.setFilecode(objesixting.getFilecode());
-			// objversion.setFilecontent(objesixting.getFilecontent());
 			objversion.setFilenameuser(objesixting.getFilenameuser());
 			objversion.setFilenameuuid(objesixting.getFilenameuuid());
 			objversion.setIsactive(objesixting.getIsactive());
@@ -870,15 +807,6 @@ public class FileService {
 			}
 
 			lsfileversionRepository.save(objfile.getLsfileversion());
-//			if (objfile.getModifiedlist().get(0).getObjsilentaudit() != null) {
-//				// objpwd.getObjsilentaudit().setModuleName("UserManagement");
-//				objfile.getModifiedlist().get(0).getObjsilentaudit()
-//						.setComments("Sheet" + " " + objfile.getFilenameuser() + " " + " was versioned to version_"
-//								+ Versionnumber + " " + "by the user" + " " + objfile.getCreateby().getUsername());
-//			
-//				objfile.getModifiedlist().get(0).getObjsilentaudit().setTableName("LSfile");
-//				lscfttransactionRepository.save(objfile.getModifiedlist().get(0).getObjsilentaudit());
-//			}
 
 			String Content = "";
 
@@ -888,17 +816,28 @@ public class FileService {
 					Content = file.getContent();
 				}
 			} else {
-				SheetCreation file = mongoTemplate.findById(objfile.getFilecode(), SheetCreation.class);
-				if (file != null) {
-					Content = file.getContent();
+				String fileid = "file_" + objfile.getFilecode();
+				GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+				if (largefile == null) {
+					largefile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileid)));
+				}
+
+				if (largefile != null) {
+					String filecontent = new BufferedReader(
+							new InputStreamReader(largefile.getInputStream(), StandardCharsets.UTF_8)).lines()
+									.collect(Collectors.joining("\n"));
+					Content = filecontent;
+				} else {
+					SheetCreation file = mongoTemplate.findById(objfile.getFilecode(), SheetCreation.class);
+					if (file != null) {
+						Content = file.getContent();
+					}
 				}
 			}
-			
+
 			updatefileversioncontent(Content, objLatestversion, objfile.getIsmultitenant());
-			updatefileversioncontent(objfile.getFilecontent(), objversion, objfile.getIsmultitenant());
-		}
-		else if(Versionnumber == 0)
-		{
+			updatefileversioncontent(orginalcontent, objversion, objfile.getIsmultitenant());
+		} else if (Versionnumber == 0) {
 			Versionnumber++;
 			LSfileversion objversion = new LSfileversion();
 
@@ -906,11 +845,9 @@ public class FileService {
 			objversion.setCreateby(objesixting.getCreateby());
 			objversion.setCreatedate(objesixting.getCreatedate());
 			objversion.setExtension(objesixting.getExtension());
-			if(objesixting.getFilecode() != null)
-			{
+			if (objesixting.getFilecode() != null) {
 				objversion.setFilecode(objesixting.getFilecode());
 			}
-			// objversion.setFilecontent(objesixting.getFilecontent());
 			objversion.setFilenameuser(objesixting.getFilenameuser());
 			objversion.setFilenameuuid(objesixting.getFilenameuuid());
 			objversion.setIsactive(objesixting.getIsactive());
@@ -920,7 +857,7 @@ public class FileService {
 			objversion.setModifieddate(objfile.getModifieddate());
 			objversion.setRejected(objesixting.getRejected());
 			objversion.setVersionno(Versionnumber);
-			
+
 			if (objfile.getLsfileversion() != null) {
 				objfile.getLsfileversion().add(objversion);
 			} else {
@@ -930,14 +867,12 @@ public class FileService {
 			}
 
 			lsfileversionRepository.save(objfile.getLsfileversion());
-			
-			updatefileversioncontent(objfile.getFilecontent(), objversion, objfile.getIsmultitenant());
+
+			updatefileversioncontent(orginalcontent, objversion, objfile.getIsmultitenant());
+		} else {
+			updatefileversioncontent(orginalcontent, objLatestversion, objfile.getIsmultitenant());
 		}
-		else
-		{
-			updatefileversioncontent(objfile.getFilecontent(), objLatestversion, objfile.getIsmultitenant());
-		}
-		
+
 		objfile.setVersionno(Versionnumber);
 
 		return true;
@@ -946,33 +881,23 @@ public class FileService {
 	public void updatefileversioncontent(String Content, LSfileversion objfile, Integer ismultitenant) {
 		if (ismultitenant == 1) {
 			CloudSheetVersion objsavefile = new CloudSheetVersion();
-			if(objfile.getFileversioncode() != null) {
-				objsavefile.setId((long) objfile.getFileversioncode());	
-			}else {
-				objsavefile.setId(1);	
+			if (objfile.getFileversioncode() != null) {
+				objsavefile.setId((long) objfile.getFileversioncode());
+			} else {
+				objsavefile.setId(1);
 			}
 			objsavefile.setContent(Content);
 			cloudSheetVersionRepository.save(objsavefile);
 		} else {
-			SheetVersion objsavefile = new SheetVersion();
-			objsavefile.setId((long) objfile.getFileversioncode());
-			objsavefile.setContent(Content);
 
-			// build query
-			Query query = new Query(Criteria.where("id").is(objsavefile.getId()));
-
-			Boolean recordcount = mongoTemplate.exists(query, SheetVersion.class);
-
-			if (!recordcount) {
-				mongoTemplate.insert(objsavefile);
-			} else {
-				Update update = new Update();
-				update.set("content", Content);
-
-				mongoTemplate.upsert(query, update, SheetVersion.class);
+			String fileid = "fileversion_" + objfile.getFileversioncode();
+			GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+			if (largefile != null) {
+				gridFsTemplate.delete(new Query(Criteria.where("filename").is(fileid)));
 			}
+			gridFsTemplate.store(new ByteArrayInputStream(Content.getBytes()), fileid);
+
 		}
-		// objfile.setFilecontent(Content);
 	}
 
 	public List<LSfileversion> Getfileversions(LSfile objfile) {
@@ -996,10 +921,26 @@ public class FileService {
 						Content = file.getContent();
 					}
 				} else {
-					SheetCreation file = mongoTemplate.findById(objfile.getFilecode(), SheetCreation.class);
-					if (file != null) {
-						Content = file.getContent();
+
+					String fileid = "file_" + objfile.getFilecode();
+					GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+					if (largefile == null) {
+						largefile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileid)));
 					}
+
+					if (largefile != null) {
+						String filecontent = new BufferedReader(
+								new InputStreamReader(largefile.getInputStream(), StandardCharsets.UTF_8)).lines()
+										.collect(Collectors.joining("\n"));
+						Content = filecontent;
+					} else {
+
+						SheetCreation file = mongoTemplate.findById(objfile.getFilecode(), SheetCreation.class);
+						if (file != null) {
+							Content = file.getContent();
+						}
+					}
+
 				}
 			}
 		} else {
@@ -1014,10 +955,25 @@ public class FileService {
 						Content = file.getContent();
 					}
 				} else {
-					SheetVersion file = mongoTemplate.findById(objVersion.getFileversioncode(), SheetVersion.class);
-					if (file != null) {
-						Content = file.getContent();
+
+					String fileid = "fileversion_" + objVersion.getFileversioncode();
+					GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+					if (largefile == null) {
+						largefile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileid)));
 					}
+
+					if (largefile != null) {
+						String filecontent = new BufferedReader(
+								new InputStreamReader(largefile.getInputStream(), StandardCharsets.UTF_8)).lines()
+										.collect(Collectors.joining("\n"));
+						Content = filecontent;
+					} else {
+						SheetVersion file = mongoTemplate.findById(objVersion.getFileversioncode(), SheetVersion.class);
+						if (file != null) {
+							Content = file.getContent();
+						}
+					}
+
 				}
 			}
 		}
@@ -1030,10 +986,6 @@ public class FileService {
 	}
 
 	public LSfile getfileoncode(LSfile objfile) {
-		if (objfile.getObjsilentaudit() != null) {
-			objfile.getObjsilentaudit().setTableName("LSfile");
-			lscfttransactionRepository.save(objfile.getObjsilentaudit());
-		}
 
 		LSfile objreturnfile = lSfileRepository.findByfilecode(objfile.getFilecode());
 		List<LSsheetupdates> list = lssheetupdatesRepository.findByfilecode(objfile.getFilecode());
@@ -1043,13 +995,28 @@ public class FileService {
 			if (objfile.getIsmultitenant() == 1) {
 				CloudSheetCreation file = cloudSheetCreationRepository.findById((long) objfile.getFilecode());
 				if (file != null) {
-					objreturnfile.setFilecontent(file.getContent());
+					objreturnfile.setFilecontent(commonfunction.getsheetdatawithfirstsheet(file.getContent()));
 				}
 			} else {
-				SheetCreation file = mongoTemplate.findById(objfile.getFilecode(), SheetCreation.class);
-				if (file != null) {
-					objreturnfile.setFilecontent(file.getContent());
+
+				String fileid = "file_" + objfile.getFilecode();
+				GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+				if (largefile == null) {
+					largefile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileid)));
 				}
+
+				if (largefile != null) {
+					String content = new BufferedReader(
+							new InputStreamReader(largefile.getInputStream(), StandardCharsets.UTF_8)).lines()
+									.collect(Collectors.joining("\n"));
+					objreturnfile.setFilecontent(content);
+				} else {
+					SheetCreation file = mongoTemplate.findById(objfile.getFilecode(), SheetCreation.class);
+					if (file != null) {
+						objreturnfile.setFilecontent(commonfunction.getsheetdatawithfirstsheet(file.getContent()));
+					}
+				}
+
 			}
 		}
 
@@ -1149,8 +1116,7 @@ public class FileService {
 		return objprotocolordershareto;
 	}
 
-	public Map<String, Object> Insertsharefileby(Lsfilesharedby objprotocolordersharedby) {
-		Map<String, Object> map = new HashMap<>();
+	public Lsfilesharedby Insertsharefileby(Lsfilesharedby objprotocolordersharedby) {
 
 		Lsfilesharedby existingshare = LsfilesharedbyRepository
 				.findBySharebyunifiedidAndSharetounifiedidAndSharefilecode(
@@ -1163,7 +1129,7 @@ public class FileService {
 
 		LsfilesharedbyRepository.save(objprotocolordersharedby);
 
-		return map;
+		return existingshare;
 	}
 
 	public List<Lsfilesharedby> Getfilesharedbyme(Lsfilesharedby lsordersharedby) {
@@ -1231,17 +1197,17 @@ public class FileService {
 		return true;
 	}
 
-	public Notification ValidateNotification(Notification objnotification) {
+	public Notification ValidateNotification(Notification objnotification) throws ParseException {
+
 		NotificationRepository.save(objnotification);
 		return null;
-		
+
 	}
-	
-	public Map<String, Object> UploadLimsFile(MultipartFile file, Long batchcode, String filename)
-			throws IOException {
-		
+
+	public Map<String, Object> UploadLimsFile(MultipartFile file, Long batchcode, String filename) throws IOException {
+
 		System.out.print("Inside UploadLimsFile");
-		
+
 		Map<String, Object> mapObj = new HashMap<String, Object>();
 
 		LsSheetorderlimsrefrence objattachment = new LsSheetorderlimsrefrence();
@@ -1250,13 +1216,13 @@ public class FileService {
 
 		if (objfile != null) {
 			objattachment.setFileid(objfile.getId());
-			
-			System.out.print("Inside UploadLimsFile filecode value "+batchcode.intValue());
-			
+
+			System.out.print("Inside UploadLimsFile filecode value " + batchcode.intValue());
+
 			LSfile classFile = lSfileRepository.findByfilecode(batchcode.intValue());
 			classFile.setFilenameuuid(objfile.getId());
 			classFile.setExtension(".pdf");
-			
+
 			lSfileRepository.save(classFile);
 		}
 
@@ -1264,9 +1230,9 @@ public class FileService {
 		objattachment.setBatchcode(batchcode);
 
 		lssheetorderlimsrefrenceRepository.save(objattachment);
-		
+
 		mapObj.put("elnSheet", objattachment);
-		
+
 		return mapObj;
 	}
 }

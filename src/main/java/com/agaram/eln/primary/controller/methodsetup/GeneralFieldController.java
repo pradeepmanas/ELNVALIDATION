@@ -47,8 +47,7 @@ public class GeneralFieldController {
 	   * @return response of Newly added GeneralField entity
 	   */
 	  @PostMapping(value = "/createGeneralField")
-	  public ResponseEntity<Object> createGeneralField(final HttpServletRequest request,
-			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+	  public ResponseEntity<Object> createGeneralField(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();		
 		  final GeneralField generalField = mapper.convertValue(mapObject.get("generalfield"), GeneralField.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -63,8 +62,7 @@ public class GeneralFieldController {
 	   * @return response entity of updated GeneralField entity
 	   */
 	  @PostMapping(value = "/updateGeneralField")
-	  public ResponseEntity<Object> updateGeneralField(final HttpServletRequest request, 
-			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+	  public ResponseEntity<Object> updateGeneralField(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();	
 		  final GeneralField generalField = mapper.convertValue(mapObject.get("generalfield"), GeneralField.class);
 		  final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
@@ -82,8 +80,7 @@ public class GeneralFieldController {
 	   * @return Response Entity relevant to delete general entity
 	   */
 	  @PostMapping(value = "/updateGeneralFieldStatus")
-	  public ResponseEntity<Object> deleteGeneralField(final HttpServletRequest request, 
-			  @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
+	  public ResponseEntity<Object> deleteGeneralField(final HttpServletRequest request, @Valid @RequestBody Map<String, Object> mapObject)throws Exception {
 		  final ObjectMapper mapper = new ObjectMapper();	
 		 
 		  final int generalFieldKey = mapper.convertValue(mapObject.get("generalfieldkey"), Integer.class);

@@ -272,6 +272,14 @@ public class ProtocolController {
 		objMap = ProtocolMasterService.GetProtocolTransactionDetails(LSprotocolmaster);
 		return objMap;
 	}
+	
+	@PostMapping("/GetProtocolorderVersionDetails")
+	public Map<String, Object> GetProtocolorderVersionDetails(@RequestBody LSlogilabprotocoldetail LSlogilabprotocoldetail)throws Exception {
+		Map<String, Object> objMap = new HashMap<String, Object>();
+		objMap = ProtocolMasterService.GetProtocolorderVersionDetails(LSlogilabprotocoldetail);
+		return objMap;
+	}
+	
 //	@RequestMapping(value="/addProtocolOrderStep")
 //	protected Map<String, Object> addProtocolOrderStep(@RequestBody Map<String, Object> argObj){
 //		Map<String, Object> objMap = new HashMap<String, Object>();
@@ -298,7 +306,7 @@ public class ProtocolController {
 
 	@RequestMapping("/GetProtocolorderResourcesQuantitylst")
 	public  Map<String, Object> GetProtocolorderResourcesQuantitylst(
-			@RequestBody LSlogilabprotocolsteps LSlogilabprotocolsteps)throws Exception {
+			@RequestBody LSlogilabprotocolsteps LSlogilabprotocolsteps) throws Exception{
 		return ProtocolMasterService.GetProtocolorderResourcesQuantitylst(LSlogilabprotocolsteps);
 	}
 
@@ -497,15 +505,9 @@ public class ProtocolController {
 	}
 
 	@PostMapping("/Getprotocollinksignature")
-	public Map<String, Object> Getprotocollinksignature(@RequestBody Map<String, String> body)throws Exception
+	public Map<String, Object> Getprotocollinksignature(@RequestBody Map<String, String> body)
 	{
 		return ProtocolMasterService.Getprotocollinksignature(body);
-	}
-	
-	@PostMapping("/Getprotocollinksignaturesql")
-	public Map<String, Object> Getprotocollinksignaturesql(@RequestBody Map<String, String> body)throws Exception
-	{
-		return ProtocolMasterService.Getprotocollinksignaturesql(body);
 	}
 	
 	@PostMapping("/Uploadprotocolorderimage")
@@ -792,7 +794,7 @@ public class ProtocolController {
 			@RequestParam("protocolmastercode") Integer protocolmastercode, 
 			@RequestParam("stepno") Integer stepno,
 			@RequestParam("protocolstepname") String protocolstepname,
-			@RequestParam("originurl") String originurl)throws Exception
+			@RequestParam("originurl") String originurl)
 	{
 	
 		return ProtocolMasterService.uploadvideo(file, protocolstepcode,protocolmastercode,stepno,protocolstepname,originurl );
@@ -974,4 +976,46 @@ public class ProtocolController {
 
 		return ProtocolMasterService.updatesharebymemeorder(Lsprotocolordersharedby);
 	}
+	
+	@PostMapping("/Getprotocollinksignaturesql")
+	public Map<String, Object> Getprotocollinksignaturesql(@RequestBody Map<String, String> body)throws Exception
+	{
+		return ProtocolMasterService.Getprotocollinksignaturesql(body);
+	}
+	
+	@RequestMapping(value = "/addProtocolOrderafterfirstofter")
+	protected Map<String, Object> addProtocolOrderafterfirstofter(@RequestBody LSlogilabprotocoldetail LSlogilabprotocoldetail)throws Exception {
+
+		return ProtocolMasterService.addProtocolOrderafterfirstofter(LSlogilabprotocoldetail);
+
+	}
+	
+	@RequestMapping(value = "/updateprotocolstepno")
+	protected List<LSprotocolstep> updateprotocolstepno(@RequestBody LSprotocolstep[] lSprotocolstep)throws Exception {
+
+		return ProtocolMasterService.updateprotocolstepno(lSprotocolstep);
+
+	}
+	
+	@RequestMapping(value = "/updateprotocolstepnoonorder")
+	protected List<LSlogilabprotocolsteps> updateprotocolstepnoonorder(@RequestBody LSlogilabprotocolsteps[] LSlogilabprotocolsteps)throws Exception {
+
+		return ProtocolMasterService.updateprotocolstepnoonorder(LSlogilabprotocolsteps);
+
+	}
+	
+	
+//	@RequestMapping(value = "/getlistofusersforworkflow")
+//	protected List<LSuserMaster> getlistofusersforworkflow(@RequestBody LSusergroup[] usergroupcode) {
+//
+//		return ProtocolMasterService.getlistofusersforworkflow(usergroupcode);
+//	}
+//	
+//	
+//	@RequestMapping(value = "/updatetimeronstep")
+//	protected LSprotocolstep updatetimeronstep(@RequestBody Map<String, Object> argObj) {
+//
+//		return ProtocolMasterService.updatetimeronstep(argObj);
+//	}
+	
 }

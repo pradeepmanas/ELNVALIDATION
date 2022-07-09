@@ -56,7 +56,8 @@ BEGIN
 
    IF counter=0 THEN       -- name is free
 INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder)
-VALUES (52, 'Retire', 'User Master', '0', 'NA', 'NA', 'NA', '0,0,0',33);
+SELECT 52, 'Retire', 'User Master', '0', 'NA', 'NA', 'NA', '0,0,0',33
+WHERE NOT EXISTS (select * from LSusergrouprightsmaster where orderno =52); 
    END IF;
 END
 $do$;
@@ -626,6 +627,75 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.lsusergroupedcolumns
     OWNER to postgres;
+
+
+DO$do$DECLARE   _kind "char";BEGIN   SELECT relkind   FROM   pg_class   WHERE  relname = 'elnresultdetails_resultid_seq'     -- sequence name, optionally schema-qualified   INTO  _kind;   IF NOT FOUND THEN       -- name is free      CREATE SEQUENCE elnresultdetails_resultid_seq;   ELSIF _kind = 'S' THEN  -- sequence exists      -- do nothing?   ELSE                    -- object name exists for different kind      -- do something!   END IF;END$do$;
+
+CREATE TABLE IF NOT EXISTS public.elnresultdetails
+(
+    resultid integer NOT NULL DEFAULT nextval('elnresultdetails_resultid_seq'::regclass),
+	batchcode numeric(17,0) NOT NULL,
+    createddate timestamp without time zone,
+    filerefname character varying(255) COLLATE pg_catalog."default",
+    methodkey integer,
+    paramname character varying(255) COLLATE pg_catalog."default",
+    parserblockkey integer,
+    results character varying(255) COLLATE pg_catalog."default",
+    seqnumber integer,
+    usercode integer NOT NULL,
+    sitecode integer NOT NULL,
+    status integer,
+    CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid),
+    CONSTRAINT fk3e3wxpn9p7uaf7bi93lpl65kx FOREIGN KEY (sitecode)
+        REFERENCES public.lssitemaster (sitecode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fkb74gvmqkxraf9nd715upaiwvn FOREIGN KEY (usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT elnresultdetails_status_check CHECK (status <= 1 AND status >= '-1'::integer)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.elnresultdetails
+    OWNER to postgres;
+
+
+CREATE TABLE IF NOT EXISTS public.elnfileattachments
+(
+    attachmentcode bigint NOT NULL,
+    batchcode numeric(17,0),
+    createdate timestamp without time zone,
+    fileextension character varying(10) COLLATE pg_catalog."default",
+    fileid character varying(250) COLLATE pg_catalog."default",
+    filename character varying(250) COLLATE pg_catalog."default",
+    islargefile integer,
+    methodkey integer,
+    modifieddate timestamp without time zone,
+    createby_usercode integer,
+    modifiedby_usercode integer,
+    CONSTRAINT elnfileattachments_pkey PRIMARY KEY (attachmentcode),
+    CONSTRAINT fk1jd5ua7hdqnjmyy9lkcffmaiq FOREIGN KEY (createby_usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fknejj0mrkl68yn315an2hk10mv FOREIGN KEY (modifiedby_usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.elnfileattachments
+    OWNER to postgres;
+
     
 update lsusergrouprightsmaster set displaytopic ='Task Master' where displaytopic ='Test Master' and modulename = 'Base Master';
 
@@ -634,7 +704,6 @@ update lsusergrouprights set displaytopic ='Task Master' where displaytopic = 'T
 ALTER TABLE IF Exists Lsrepositories ADD COLUMN IF NOT EXISTS unit varchar(250);
  
 INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (53, 'Parser', 'Parser', '0', 'NA', 'NA', 'NA', '1,0,0',55) ON CONFLICT(orderno)DO NOTHING;
-
 INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (54, 'Delimiters', 'Parser', '0', '0', '0', '0', '1,1,1',56) ON CONFLICT(orderno)DO NOTHING;
 INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (55, 'Method Delimiters', 'Parser', '0', '0', '0', '0', '1,1,1',57) ON CONFLICT(orderno)DO NOTHING;
 INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (56, 'Method Master', 'Parser', '0', '0', '0', '0', '1,1,1',58) ON CONFLICT(orderno)DO NOTHING;
@@ -736,10 +805,18 @@ update lslogilabprotocoldetail set completedtimestamp = current_timestamp where 
 
 update lsusergrouprights set sallow='1',screate='1',sdelete='1',sedit='1' where modulename='Protocol Templates' and displaytopic ='Protocol Templates';
 
-ALTER TABLE IF Exists lslogilablimsorderdetail ADD COLUMN IF NOT EXISTS Keyword varchar(250);
+ALTER TABLE IF Exists lsprotocolmaster ADD COLUMN IF NOT EXISTS defaulttemplate Integer;
+
+update lsusergrouprightsmaster set modulename='Parser' where displaytopic='Instrument Master'and modulename='Base Master';
+
+update lsusergrouprights set modulename='Parser' where displaytopic='Instrument Master'and modulename='Base Master';
 
 update lsusergrouprights set sallow='1',screate='1',sdelete='1',sedit='1' where modulename='Protocol Templates' and displaytopic ='Protocol Templates';
 
 update lsusergrouprights set sallow='1',screate='1' where modulename='Protocol Templates' and displaytopic ='New Step' and screate='NA';
 
 update lsusergrouprightsmaster set sallow='0',screate='0',sdelete='0',sedit='0' where modulename = 'Protocol Templates' and displaytopic ='Protocol Templates';
+
+ALTER TABLE IF Exists lslogilablimsorderdetail ADD COLUMN IF NOT EXISTS Keyword varchar(250);
+
+

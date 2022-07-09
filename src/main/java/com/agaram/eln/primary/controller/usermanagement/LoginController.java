@@ -22,6 +22,7 @@ import com.agaram.eln.primary.commonfunction.commonfunction;
 import com.agaram.eln.primary.model.general.Response;
 import com.agaram.eln.primary.model.sheetManipulation.Notification;
 import com.agaram.eln.primary.model.usermanagement.LSSiteMaster;
+import com.agaram.eln.primary.model.usermanagement.LSactiveUser;
 import com.agaram.eln.primary.model.usermanagement.LSdomainMaster;
 import com.agaram.eln.primary.model.usermanagement.LSuserMaster;
 import com.agaram.eln.primary.model.usermanagement.LSusergroup;
@@ -34,7 +35,6 @@ public class LoginController {
 
 	@Autowired
 	private LoginService loginService;
-
 
 	@GetMapping("/LoadSite")
 	public List<LSSiteMaster> loadSite(HttpServletRequest request)throws Exception {
@@ -56,8 +56,13 @@ public class LoginController {
 		return loginService.Login(objuser);
 	}
 
+	@PostMapping("/ActiveUserEntry")
+	public LSactiveUser activeUserEntry(@RequestBody LSactiveUser objsite)throws Exception {
+		return loginService.activeUserEntry(objsite);
+	}
+
 	@PostMapping("/CheckUserAndPassword")
-	public LSuserMaster CheckUserAndPassword(@RequestBody LoggedUser objuser)throws Exception {
+	public List<LSuserMaster>  CheckUserAndPassword(@RequestBody LoggedUser objuser)throws Exception {
 		return loginService.CheckUserAndPassword(objuser);
 	}
 
@@ -205,10 +210,14 @@ public class LoginController {
 		return rMap;
 	}
 
-	// added for notification
 	@PostMapping("/Loginnotification")
 	public Notification Loginnotification(@RequestBody Notification objNotification) throws ParseException {
 		return loginService.Loginnotification(objNotification);
 	}
-	// added for notification
+
+	@PostMapping("/ValidateuserAndPassword")
+	public List <LSuserMaster> ValidateuserAndPassword(@RequestBody LoggedUser objuser)throws Exception {
+		return loginService.ValidateuserAndPassword(objuser);
+	}
+
 }

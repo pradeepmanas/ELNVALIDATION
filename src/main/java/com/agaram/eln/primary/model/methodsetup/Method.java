@@ -12,6 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,7 +42,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer"})
 @XmlRootElement  (name = "method")
 @XmlType(propOrder = { "methodkey", "methodname", "instmaster", "instrawdataurl",
-		"samplesplit", "parser", "site", "status", "createdby", "createddate"})
+		"samplesplit", "parser", "site", "status", "createdby", "createddate","username","transactiondate"})
 @Entity
 @Table(name = "method")
 public class Method implements Serializable, Diffable<Method>{
@@ -108,6 +111,13 @@ public class Method implements Serializable, Diffable<Method>{
 		return instmaster;
 	}
 
+	@Transient
+	private String username;
+	
+	@Transient
+	@Temporal(TemporalType.TIMESTAMP)
+	Date transactiondate;
+	
 	public void setInstmaster(InstrumentMaster instmaster) {
 		this.instmaster = instmaster;
 	}
@@ -176,6 +186,24 @@ public class Method implements Serializable, Diffable<Method>{
 		this.createddate = createddate;
 	}
 
+		
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	
+	public Date getTransactiondate() {
+		return transactiondate;
+	}
+
+	public void setTransactiondate(Date transactiondate) {
+		this.transactiondate = transactiondate;
+	}
+
 	/**
 	 * To find difference between two entity objects by implementing Diffable interface  
 	 */
@@ -192,6 +220,8 @@ public class Method implements Serializable, Diffable<Method>{
 	       .append("status",this.status, obj.status)
 	       .append("createdby", this.createdby.getUsername(), obj.createdby.getUsername())
 	       .append("createddate", this.createddate, obj.createddate)
+	       .append("username", this.username, obj.username)
+	       .append("transactiondate", this.transactiondate, obj.transactiondate)
 	       .build();
 	}
 
@@ -223,6 +253,8 @@ public class Method implements Serializable, Diffable<Method>{
 		this.status = method.status;
 		this.createdby = method.createdby;
 		this.createddate = method.createddate;
+		this.username = method.username;
+		this.transactiondate=method.transactiondate;
 	}
 	
 	/**

@@ -1,11 +1,18 @@
 package com.agaram.eln.primary.service.methodsetup;
 
-import java.io.BufferedWriter;
+
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,6 +25,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.DiffResult;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
@@ -25,14 +33,30 @@ import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.util.Matrix;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsOperations;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.mock.web.MockMultipartFile;
+
+import com.agaram.eln.primary.model.cfr.LScfttransaction;
+import com.agaram.eln.primary.model.general.SheetCreation;
 import com.agaram.eln.primary.model.instrumentsetup.InstrumentMaster;
+import com.agaram.eln.primary.model.methodsetup.CloudParserFile;
+
 import com.agaram.eln.primary.model.methodsetup.CustomField;
 import com.agaram.eln.primary.model.methodsetup.Method;
 import com.agaram.eln.primary.model.methodsetup.ParserBlock;
@@ -45,11 +69,17 @@ import com.agaram.eln.primary.model.methodsetup.SubParserField;
 import com.agaram.eln.primary.model.methodsetup.SubParserTechnique;
 import com.agaram.eln.primary.model.usermanagement.LSSiteMaster;
 import com.agaram.eln.primary.model.usermanagement.LSuserMaster;
+import com.agaram.eln.primary.repository.cfr.LScfttransactionRepository;
 import com.agaram.eln.primary.repository.instrumentsetup.InstMasterRepository;
+import com.agaram.eln.primary.repository.methodsetup.CloudParserFileRepository;
 import com.agaram.eln.primary.repository.methodsetup.CustomFieldRepository;
 import com.agaram.eln.primary.repository.methodsetup.MethodRepository;
 import com.agaram.eln.primary.repository.usermanagement.LSuserMasterRepository;
+
+import com.agaram.eln.primary.service.cloudFileManip.CloudFileManipulationservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.gridfs.GridFSDBFile;
+
 
 /**
  * This Service class is used to access the MethodRepository to fetch details
@@ -60,6 +90,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Service
 public class MethodService {
+
+	//private static String ;
 
 	@Autowired
 	MethodRepository methodRepo;
@@ -94,6 +126,27 @@ public class MethodService {
 	@Autowired
 	CustomFieldService customFieldService;
 	
+    @Autowired
+    private CloudParserFileRepository cloudparserfilerepository;
+    
+	@Autowired
+	GridFsOperations gridFsOps;
+
+	@Autowired
+	private MongoTemplate mongoTemplate;
+
+	@Autowired
+	private GridFsTemplate gridFsTemplate;
+	
+	
+    @Autowired
+    private CloudFileManipulationservice cloudFileManipulationservice;
+    
+    @Autowired
+	LScfttransactionRepository lscfttransactionrepo;
+		
+    
+    
 	/**
 	 * This method is used to retrieve list of active methods in the site.
 	 * @param site [Site] object for which the methods are to be fetched
@@ -138,7 +191,21 @@ public class MethodService {
 //					cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
 //							"Create", comments, site, "",
 //							createdUser, request.getRemoteAddr());
-	
+					
+					LScfttransaction LScfttransaction = new LScfttransaction();
+					
+					LScfttransaction.setActions("Insert");
+					LScfttransaction.setComments("Duplicate Entry  -"+methodMaster.getMethodname());
+					LScfttransaction.setLssitemaster(site.getSitecode());
+					LScfttransaction.setLsuserMaster(methodMaster.getCreatedby().getUsercode());
+					LScfttransaction.setManipulatetype("View/Load");
+					LScfttransaction.setModuleName("Method Master");
+					LScfttransaction.setTransactiondate(methodMaster.getCreateddate());
+					LScfttransaction.setUsername(methodMaster.getUsername());
+					LScfttransaction.setTableName("Method");
+					LScfttransaction.setSystemcoments("System Generated");
+					
+					lscfttransactionrepo.save(LScfttransaction);
 				}
 	  			return new ResponseEntity<>("Duplicate Entry - " + methodMaster.getMethodname() + " - " + instMaster.getInstrumentcode(), 
 	  					 HttpStatus.CONFLICT);
@@ -159,6 +226,22 @@ public class MethodService {
 //							
 //				    cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
 //							"Create", "", site, xmlData, createdUser, request.getRemoteAddr());
+					
+	                LScfttransaction LScfttransaction = new LScfttransaction();
+					
+					LScfttransaction.setActions("Insert");
+					LScfttransaction.setComments(methodMaster.getMethodname()+" was created by "+methodMaster.getUsername());
+					LScfttransaction.setLssitemaster(site.getSitecode());
+					LScfttransaction.setLsuserMaster(methodMaster.getCreatedby().getUsercode());
+					LScfttransaction.setManipulatetype("View/Load");
+					LScfttransaction.setModuleName("Method Master");
+					LScfttransaction.setTransactiondate(methodMaster.getCreateddate());
+					LScfttransaction.setUsername(methodMaster.getUsername());
+					LScfttransaction.setTableName("Method");
+					LScfttransaction.setSystemcoments("System Generated");
+					
+					lscfttransactionrepo.save(LScfttransaction);
+					
 				}
 			
 				return new ResponseEntity<>( savedMethod, HttpStatus.OK);			
@@ -173,12 +256,24 @@ public class MethodService {
 //				cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
 //						"Create", comments, site, "",
 //						createdUser, request.getRemoteAddr());
-
+				  LScfttransaction LScfttransaction = new LScfttransaction();
+					
+					LScfttransaction.setActions("Insert");
+					LScfttransaction.setComments("Create Failed as Instrument not found");
+					LScfttransaction.setLssitemaster(site.getSitecode());
+					LScfttransaction.setLsuserMaster(methodMaster.getCreatedby().getUsercode());
+					LScfttransaction.setManipulatetype("View/Load");
+					LScfttransaction.setModuleName("Method Delimiter");
+					LScfttransaction.setTransactiondate(methodMaster.getCreateddate());
+					LScfttransaction.setUsername(methodMaster.getUsername());
+					LScfttransaction.setTableName("Method");
+					LScfttransaction.setSystemcoments("System Generated");
+					
+					lscfttransactionrepo.save(LScfttransaction);
 			}
   			return new ResponseEntity<>("Invalid Instrument", HttpStatus.NOT_FOUND);
 		}		
-	}
-		
+	}		
 	/**
 	 * This method is used to update selected Method object.
 	 * The method name can be updated any time.
@@ -194,17 +289,128 @@ public class MethodService {
 	 * @return Response of updated method master entity
 	 */
 	@Transactional
+//	public ResponseEntity<Object> updateMethod(final Method method, final LSSiteMaster site, final int doneByUserKey, 
+//			   final String comments, final boolean saveAuditTrail, final HttpServletRequest request)
+//	{	  		
+//		final LSuserMaster createdUser = getCreatedUserByKey(doneByUserKey);		
+//		final InstrumentMaster instMaster = instMastRepo.findOne(method.getInstmaster().getInstmastkey());
+//		
+//		 final Optional<Method> methodByKey = methodRepo.findByMethodkeyAndStatus(method.getMethodkey(), 1);
+//		 
+//		 if(methodByKey.isPresent()) {		   
+//
+//		
+//		if (instMaster != null) 
+//		{
+//
+//			final Optional<Method> methodByName = methodRepo.findByMethodnameAndInstmasterAndStatus(
+//					method.getMethodname(), instMaster, 1);
+//			
+//		
+//			if (methodByName.isPresent())
+//              {
+//				 
+//				if(methodByName.get().getMethodkey().equals(method.getMethodkey()))
+//		    	{   
+//				//copy of object for using 'Diffable' to compare objects
+//	    			final Method methodBeforeSave = new Method(methodByName.get());
+//	    			
+//					method.setInstmaster(instMaster);		    			
+//		    		final Method savedMethod = methodRepo.save(method);
+//		    		
+//		    		if (saveAuditTrail)
+//	    			{
+//		    			final String xmlData = convertMethodObjectToXML(methodBeforeSave, savedMethod);
+//		    			
+////		    			cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.USER.getActionType(),
+////								"Edit", comments, site, xmlData, createdUser, request.getRemoteAddr());
+//	    			}
+//		    		
+//		    		return new ResponseEntity<>(savedMethod , HttpStatus.OK);	
+//		    	}
+//				else {
+//					//Conflict =409 - Duplicate entry
+//	    			if (saveAuditTrail == true)
+//	    			{						
+//	    				final String sysComments = "Update Failed for duplicate method name - "+ method.getMethodname();
+//	    				
+////	    				cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
+////	    						"Create", sysComments, site, "",createdUser, request.getRemoteAddr());
+//	    			}
+//	    			
+//	    			return new ResponseEntity<>("Duplicate Entry - " + method.getMethodname() + " - " + instMaster.getInstrumentcode(), 
+//		  					 HttpStatus.CONFLICT);      		
+//				}
+//		   }
+//			
+//			
+//			else
+//	    	{			    		
+//	    		//copy of object for using 'Diffable' to compare objects
+//    			final Method methodBeforeSave = new Method(methodByKey.get());
+//    			
+//	    		//Updating fields with a new delimiter name
+//    			
+//	    		final Method savedMethod = methodRepo.save(method);
+//	    		
+//	    		if (saveAuditTrail)
+//    			{
+//	    			final String xmlData = convertMethodObjectToXML(methodBeforeSave, savedMethod);
+//	    			
+////	    			cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.USER.getActionType(),
+////							"Edit", comments, site, xmlData, createdUser, request.getRemoteAddr());
+//    			}
+//	    		
+//	    		return new ResponseEntity<>(savedMethod , HttpStatus.OK);			    		
+//	    	}	
+//			   }
+//			
+//			
+//			
+//		   else
+//		   {
+//			   //Invalid methodkey		   
+//			   if (saveAuditTrail) {				
+////					cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
+////							"Edit", "Update Failed - Method Not Found", site, "", createdUser, request.getRemoteAddr());
+//	   		    }			
+//				return new ResponseEntity<>("Update Failed - Method Not Found", HttpStatus.NOT_FOUND);
+//		   }
+//		}
+//		else {
+//			//Instrument not found
+//			if (saveAuditTrail == true)
+//			{		
+////				cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
+////						"Edit", "Update Failed", site, "",
+////						createdUser, request.getRemoteAddr());
+//
+//			}
+//  			return new ResponseEntity<>("Invalid Instrument", HttpStatus.NOT_FOUND);
+//		}
+//   }	
+	
 	public ResponseEntity<Object> updateMethod(final Method method, final LSSiteMaster site, final int doneByUserKey, 
 			   final String comments, final boolean saveAuditTrail, final HttpServletRequest request)
 	{	  		
 		final LSuserMaster createdUser = getCreatedUserByKey(doneByUserKey);		
 		final InstrumentMaster instMaster = instMastRepo.findOne(method.getInstmaster().getInstmastkey());
+		
+		 final Optional<Method> methodByKey = methodRepo.findByMethodkeyAndStatus(method.getMethodkey(), 1);
+		 
+		 if(methodByKey.isPresent()) {		   
+
+		
 		if (instMaster != null) 
 		{
+
 			final Optional<Method> methodByName = methodRepo.findByMethodnameAndInstmasterAndStatus(
 					method.getMethodname(), instMaster, 1);
+			
+		
 			if (methodByName.isPresent())
-			{
+        {
+				 
 				if(methodByName.get().getMethodkey().equals(method.getMethodkey()))
 		    	{   
 				//copy of object for using 'Diffable' to compare objects
@@ -219,6 +425,21 @@ public class MethodService {
 		    			
 //		    			cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.USER.getActionType(),
 //								"Edit", comments, site, xmlData, createdUser, request.getRemoteAddr());
+		    			
+		    			 LScfttransaction LScfttransaction = new LScfttransaction();
+							
+							LScfttransaction.setActions("Update");
+							LScfttransaction.setComments(method.getMethodname()+" was updated by "+method.getUsername());
+							LScfttransaction.setLssitemaster(site.getSitecode());
+							LScfttransaction.setLsuserMaster(method.getCreatedby().getUsercode());
+							LScfttransaction.setManipulatetype("View/Load");
+							LScfttransaction.setModuleName("Method Master");
+							LScfttransaction.setTransactiondate(method.getCreateddate());
+							LScfttransaction.setUsername(method.getUsername());
+							LScfttransaction.setTableName("Method");
+							LScfttransaction.setSystemcoments("System Generated");
+							
+							lscfttransactionrepo.save(LScfttransaction);
 	    			}
 		    		
 		    		return new ResponseEntity<>(savedMethod , HttpStatus.OK);	
@@ -231,18 +452,89 @@ public class MethodService {
 	    				
 //	    				cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
 //	    						"Create", sysComments, site, "",createdUser, request.getRemoteAddr());
+	    				
+	    				 LScfttransaction LScfttransaction = new LScfttransaction();
+	 					
+	 					LScfttransaction.setActions("Update");
+	 					LScfttransaction.setComments(" Duplicate Entry method name - "+ method.getMethodname());
+	 					LScfttransaction.setLssitemaster(site.getSitecode());
+	 					LScfttransaction.setLsuserMaster(method.getCreatedby().getUsercode());
+	 					LScfttransaction.setManipulatetype("View/Load");
+	 					LScfttransaction.setModuleName("Method Master");
+	 					LScfttransaction.setTransactiondate(method.getCreateddate());
+	 					LScfttransaction.setUsername(method.getUsername());
+	 					LScfttransaction.setTableName("Method");
+	 					LScfttransaction.setSystemcoments("System Generated");
+	 					
+	 					lscfttransactionrepo.save(LScfttransaction);
+	 					
 	    			}
 	    			
 	    			return new ResponseEntity<>("Duplicate Entry - " + method.getMethodname() + " - " + instMaster.getInstrumentcode(), 
 		  					 HttpStatus.CONFLICT);      		
 				}
 		   }
+			
+			
+			else
+	    	{			    		
+	    		//copy of object for using 'Diffable' to compare objects
+			final Method methodBeforeSave = new Method(methodByKey.get());
+			
+	    		//Updating fields with a new delimiter name
+			
+	    		final Method savedMethod = methodRepo.save(method);
+	    		
+	    		if (saveAuditTrail)
+			{
+	    			final String xmlData = convertMethodObjectToXML(methodBeforeSave, savedMethod);
+	    			
+//	    			cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.USER.getActionType(),
+//							"Edit", comments, site, xmlData, createdUser, request.getRemoteAddr());
+	    			
+	    			 LScfttransaction LScfttransaction = new LScfttransaction();
+	 					
+	 					LScfttransaction.setActions("Update");
+	 					LScfttransaction.setComments(method.getMethodname()+" was updated by "+method.getUsername());
+	 					LScfttransaction.setLssitemaster(site.getSitecode());
+	 					LScfttransaction.setLsuserMaster(method.getCreatedby().getUsercode());
+	 					LScfttransaction.setManipulatetype("View/Load");
+	 					LScfttransaction.setModuleName("Method Master");
+	 					LScfttransaction.setTransactiondate(method.getCreateddate());
+	 					LScfttransaction.setUsername(method.getUsername());
+	 					LScfttransaction.setTableName("Method");
+	 					LScfttransaction.setSystemcoments("System Generated");
+	 					
+	 					lscfttransactionrepo.save(LScfttransaction);
+			}
+	    		
+	    		
+	    		return new ResponseEntity<>(savedMethod , HttpStatus.OK);			    		
+	    	}	
+			   }
+			
+			
+			
 		   else
 		   {
 			   //Invalid methodkey		   
 			   if (saveAuditTrail) {				
 //					cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
 //							"Edit", "Update Failed - Method Not Found", site, "", createdUser, request.getRemoteAddr());
+				   LScfttransaction LScfttransaction = new LScfttransaction();
+					
+					LScfttransaction.setActions("Update");
+					LScfttransaction.setComments(" Update Failed - Method Not Found");
+					LScfttransaction.setLssitemaster(site.getSitecode());
+					LScfttransaction.setLsuserMaster(method.getCreatedby().getUsercode());
+					LScfttransaction.setManipulatetype("View/Load");
+					LScfttransaction.setModuleName("Method Master");
+					LScfttransaction.setTransactiondate(method.getCreateddate());
+					LScfttransaction.setUsername(method.getUsername());
+					LScfttransaction.setTableName("Method");
+					LScfttransaction.setSystemcoments("System Generated");
+					
+					lscfttransactionrepo.save(LScfttransaction);
 	   		    }			
 				return new ResponseEntity<>("Update Failed - Method Not Found", HttpStatus.NOT_FOUND);
 		   }
@@ -254,12 +546,27 @@ public class MethodService {
 //				cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
 //						"Edit", "Update Failed", site, "",
 //						createdUser, request.getRemoteAddr());
+				 LScfttransaction LScfttransaction = new LScfttransaction();
+					
+					LScfttransaction.setActions("Update");
+					LScfttransaction.setComments("Invalid Instrument");
+					LScfttransaction.setLssitemaster(site.getSitecode());
+					LScfttransaction.setLsuserMaster(method.getCreatedby().getUsercode());
+					LScfttransaction.setManipulatetype("View/Load");
+					LScfttransaction.setModuleName("Method Master");
+					LScfttransaction.setTransactiondate(method.getCreateddate());
+					LScfttransaction.setUsername(method.getUsername());
+					LScfttransaction.setTableName("Method");
+					LScfttransaction.setSystemcoments("System Generated");
+					
+					lscfttransactionrepo.save(LScfttransaction);
 
 			}
-  			return new ResponseEntity<>("Invalid Instrument", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Invalid Instrument", HttpStatus.NOT_FOUND);
 		}
-   }		
-		
+}	
+	
+	
 	/**
 	 * This method is used to delete selected Method object based on its primary key.
 	 * Need to validate that sample splitting /parsing is not done for that Method before deleting.
@@ -272,60 +579,93 @@ public class MethodService {
 	 * @param request [HttpServletRequest] Request object to ip address of remote client
 	 * @return Response of deleted method master entity
 	 */
-   @Transactional()
-   public ResponseEntity<Object> deleteMethod(final int methodKey, 
-		   final LSSiteMaster site, final String comments, final int doneByUserKey, 
-		   final boolean saveAuditTrial, final HttpServletRequest request)
-   {	   
-	   final Optional<Method> methodByKey = methodRepo.findByMethodkeyAndStatus(methodKey, 1);
-	   final LSuserMaster createdUser = getCreatedUserByKey(doneByUserKey);
-	   
-	   if(methodByKey.isPresent()) {
-
-		   final Method method = methodByKey.get();
-		   if ((method.getSamplesplit() != null && method.getSamplesplit() == 1)
-				   || (method.getParser() != null && method.getParser() == 1)) {
-			    if (saveAuditTrial)
-	    		{	
-				   final String sysComments = "Delete Failed as method - "+ method.getMethodname() + " is associated samlesplit/parser";
-		   			
-//					cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
-//							"Delete", sysComments, method.getSite(), "", createdUser, request.getRemoteAddr());
-	    	    }
-			    return new ResponseEntity<>(method.getMethodname() , HttpStatus.IM_USED);//status code - 226	
-		   }
-		   else {
+	 @Transactional()
+	   public ResponseEntity<Object> deleteMethod(final int methodKey, 
+			   final LSSiteMaster site, final String comments, final int doneByUserKey, 
+			   final boolean saveAuditTrial, final HttpServletRequest request,final Method otherdetails)
+	   {	   
+		   final Optional<Method> methodByKey = methodRepo.findByMethodkeyAndStatus(methodKey, 1);
+		   final LSuserMaster createdUser = getCreatedUserByKey(doneByUserKey);
 		   
-			   //copy of object for using 'Diffable' to compare objects
-			   final Method methodBeforeSave = new Method(method); 
+		   if(methodByKey.isPresent()) {
 
-    		   //Its not associated in transaction
-			   method.setStatus(-1);
-			   final Method savedMethod = methodRepo.save(method);   
+			   final Method method = methodByKey.get();
+			   if ((method.getSamplesplit() != null && method.getSamplesplit() == 1)
+					   || (method.getParser() != null && method.getParser() == 1)) {
+				    if (saveAuditTrial)
+		    		{	
+					   final String sysComments = "Delete Failed as method - "+ method.getMethodname() + " is associated samlesplit/parser";
+			   			
+//						cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
+//								"Delete", sysComments, method.getSite(), "", createdUser, request.getRemoteAddr());
 					   
-			    if (saveAuditTrial)
-    			{				    	
-	    			final String xmlData = convertMethodObjectToXML(methodBeforeSave, savedMethod);
-	    			
-	    			//final String actionType = EnumerationInfo.CFRActionType.USER.getActionType();
-//					cfrTransService.saveCfrTransaction(page, actionType, "Delete", comments, 
-//							site, xmlData, createdUser, request.getRemoteAddr());
-    			}
+					   LScfttransaction LScfttransaction = new LScfttransaction();
+						
+						LScfttransaction.setActions("Delete"); 
+						LScfttransaction.setComments("Associated - "+ method.getMethodname());
+						LScfttransaction.setLssitemaster(site.getSitecode());
+						LScfttransaction.setLsuserMaster(doneByUserKey);
+						LScfttransaction.setManipulatetype("View/Load");
+						LScfttransaction.setModuleName("Method Master");
+						LScfttransaction.setTransactiondate(otherdetails.getTransactiondate());
+						LScfttransaction.setUsername(otherdetails.getUsername());
+						LScfttransaction.setTableName("Method");
+						LScfttransaction.setSystemcoments("System Generated");
+						
+						lscfttransactionrepo.save(LScfttransaction);
+						
+		    	    }
+				    return new ResponseEntity<>(method.getMethodname() , HttpStatus.IM_USED);//status code - 226	
+			   }
+			   else {
 			   
-			   return new ResponseEntity<>(savedMethod, HttpStatus.OK); 
+
+						   
+				    if (saveAuditTrial)
+	    			{				    	
+		    		// String xmlData = convertMethodObjectToXML(methodBeforeSave, savedMethod);
+		    			
+		    			//final String actionType = EnumerationInfo.CFRActionType.USER.getActionType();
+//						cfrTransService.saveCfrTransaction(page, actionType, "Delete", comments, 
+//								site, xmlData, createdUser, request.getRemoteAddr());
+		    			 LScfttransaction LScfttransaction = new LScfttransaction();
+							
+							LScfttransaction.setActions("Delete"); 
+							LScfttransaction.setComments(method.getMethodname()+" was deleted by "+otherdetails.getUsername());
+							LScfttransaction.setLssitemaster(site.getSitecode());
+							LScfttransaction.setLsuserMaster(doneByUserKey);
+							LScfttransaction.setManipulatetype("View/Load");
+							LScfttransaction.setModuleName("Method Master");
+							LScfttransaction.setTransactiondate(otherdetails.getTransactiondate());
+							LScfttransaction.setUsername(otherdetails.getUsername());
+							LScfttransaction.setTableName("Method");
+							LScfttransaction.setSystemcoments("System Generated");
+							
+							lscfttransactionrepo.save(LScfttransaction);
+	    			}
+				    
+					   //copy of object for using 'Diffable' to compare objects
+					   final Method methodBeforeSave = new Method(method); 
+
+		    		   //Its not associated in transaction
+					   method.setStatus(-1);
+					   final Method savedMethod = methodRepo.save(method);   
+					   
+				   return new ResponseEntity<>(savedMethod, HttpStatus.OK); 
+			   }
 		   }
-	   }
-	   else
-	   {
-		   //Invalid methodkey
-		   if (saveAuditTrial) {				
-//				cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
-//						"Delete", "Delete Failed - Method Not Found", site, "", 
-//						createdUser, request.getRemoteAddr());
-  		    }			
-			return new ResponseEntity<>("Delete Failed - Method Not Found", HttpStatus.NOT_FOUND);
-	   }
-   }  
+		   else
+		   {
+			   //Invalid methodkey
+			   if (saveAuditTrial) {				
+//					cfrTransService.saveCfrTransaction(page, EnumerationInfo.CFRActionType.SYSTEM.getActionType(),
+//							"Delete", "Delete Failed - Method Not Found", site, "", 
+//							createdUser, request.getRemoteAddr());
+				   				
+	  		    }			
+				return new ResponseEntity<>("Delete Failed - Method Not Found", HttpStatus.NOT_FOUND);
+		   }
+	   }  
 	   
    /**
     * This method is used to fetch list of instruments that are not yet associated with
@@ -389,108 +729,301 @@ public class MethodService {
     * to byte array using InputStream. 
     * If the .txt version of the file already exists, it will convert to byte[] without pdf to txt conversion.  
     * If the input file is a '.txt' file, it will convert to byte array.	    
+ * @param retrivedfile 
     * @param fileName [String] name of pdf/txt/csv file to convert
+ * @param ok 
     * @return string of text file content
+ * @throws FileNotFoundException 
+ * @throws IOException 
     */
-   @SuppressWarnings("unused")
-   public String getFileData(final String fileName)
-   {	   
-	   //"pdftotext.exe -layout " + "\"C://Users/Ate153/Downloads/RS 1.pdf\""
+  
+   
+//   public String getFileData(final String fileName,String tenant) throws FileNotFoundException, IOException
+//   {	   
+//	   //"pdftotext.exe -layout " + "\"C://Users/Ate153/Downloads/RS 1.pdf\""
+//	  
+////		 
+//	   try
+//        {			
+//		   File file = null;
+//		   final String ext = FilenameUtils.getExtension(fileName); 
+//		   String rawDataText="";
+//		   		   		 
+//		   
+//		   CloudParserFile obj = cloudparserfilerepository.findByfilename(fileName);
+//		    String fileid = obj.fileid;
+//			   
+//		//retrieving pdf data from blob	
+//			byte[] data = null;
+//			try {
+//				data = StreamUtils
+//						.copyToByteArray(cloudFileManipulationservice.retrieveCloudFile(fileid, tenant + "parserfile"));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		//	ByteArrayInputStream bis = new ByteArrayInputStream(data);
+//			//converting byte stream to file
+//			
+//			 final String retrivedfile = FilenameUtils.getBaseName(fileName);	
+//			 try (FileOutputStream fileOuputStream  = new FileOutputStream("uploads/"+ retrivedfile )){
+//				 fileOuputStream .write(data);
+//				 }
+//			
+//			 String textfilename = retrivedfile+".txt";
+//		   
+//		   
+//		   if (ext.equalsIgnoreCase("pdf")) {		
+//	
+////			   final String name = FilenameUtils.getBaseName(fileName);				  
+////			   final String filePath = "uploads/"+ name + ".txt";
+//			     
+//			 //  final String name = FilenameUtils.getBaseName(fileName);				  
+//			   final String filePath = "uploads/"+ retrivedfile + ".txt";
+//			   
+//			   file = new File(filePath);
+//			   if (!file.exists()) {
+//
+//				   String parsedText = "";
+//				   PDFParser parser = null;
+//				    PDDocument pdDoc = null;
+//				    COSDocument cosDoc = null;
+//				    PDFTextStripper pdfStripper;
+//
+//				    try {
+//				    //	RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(new File("uploads/"+fileName));
+//				    	RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(new File("uploads/"+retrivedfile));
+//				        parser = new PDFParser(raFile);
+//				        parser.setLenient(true);
+//				        parser.parse();
+//				        cosDoc = parser.getDocument();
+//				        pdfStripper = new PDFTextStripper();
+//				        pdfStripper.setSortByPosition( true );
+//				              			       
+//				        pdDoc = new PDDocument(cosDoc);
+//				    //    pdfStripper.setAddMoreFormatting(true);
+//				        pdfStripper.setWordSeparator("\t");
+//				        pdfStripper.setSuppressDuplicateOverlappingText(true);
+//				        Matrix matrix = new Matrix();
+//				        matrix.clone();
+//				        pdfStripper.setTextLineMatrix(matrix);
+//				   
+//				        parsedText = pdfStripper.getText(pdDoc);
+//				                                                                                                             
+//				                                                                                                                                     
+//				        if (!file.exists()) {
+//				            file.createNewFile();
+//				        }
+//				        
+//				        
+//				        FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+//				        BufferedWriter bw = new BufferedWriter(fw);
+//
+//				        bw.write(parsedText);
+//				        bw.close();
+//				        System.out.println(parsedText.replaceAll("[^A-Za-z0-9. ]+", ""));
+//				            
+//					      //converting text file to multipart file
+//					        
+//					        Path path = Paths.get("uploads/"+retrivedfile+".txt");
+//					        String txtfilename = retrivedfile+".txt";
+//					        String originalFileName = retrivedfile;
+//					        String contentType = "text/plain";
+//					        byte[] content = null;
+//					        try {
+//					            content = Files.readAllBytes(path);
+//					        } catch (final IOException e) {
+//					        }
+//					        MultipartFile convertedmultipartfile = new MockMultipartFile(txtfilename,
+//					                             originalFileName, contentType, content);
+//					        
+//					        //storing file in blob
+//					        
+//					        String textid = null;
+//				    		try {
+//				    			textid = cloudFileManipulationservice.storecloudfilesreturnUUID(convertedmultipartfile, "parsertextfile");
+//				    		} catch (IOException e) {
+//				    			// TODO Auto-generated catch block
+//				    			e.printStackTrace();
+//				    		}
+//		
+//				    		CloudParserFile objfile = new CloudParserFile();
+//				    		objfile.setFileid(textid);
+//		
+//				    		//objfile.setFile(new Binary(BsonBinarySubType.BINARY, file.getBytes()));
+//				    		objfile.setExtension(".txt");
+//				    		objfile.setFilename(txtfilename);
+//				    			
+//				    		cloudparserfilerepository.save(objfile);
+//				    } catch (Exception e) {
+//				        e.printStackTrace();
+//				        try {
+//				            if (cosDoc != null)
+//				                cosDoc.close();
+//				            if (pdDoc != null)
+//				                pdDoc.close();
+//				        } catch (Exception e1) {
+//				            e1.printStackTrace();
+//				        }
+//
+//				    }
+//		        		          
+//			   }		           
+//		   }
+//		   else
+//		   {
+//			   final String filePath = "uploads/"+fileName;
+//			   file = new File(filePath);
+//		   } 
+//		   
+//		   CloudParserFile txtobj = cloudparserfilerepository.findByfilename(textfilename);
+//		   String txtfileid = txtobj.fileid;
+//		   
+//		 //retrieving txt data from blob	
+//			byte[] txtdata = null;
+//			try {
+//				txtdata = StreamUtils
+//						.copyToByteArray(cloudFileManipulationservice.retrieveCloudFile(txtfileid, tenant + "parsertextfile"));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		   
+//			//converting byte stream to file
+//			
+////			 final String retrivedtxtfile = FilenameUtils.getBaseName(textfilename);	
+////			 try (FileOutputStream fileOuputStream  = new FileOutputStream("uploads/"+ retrivedtxtfile)){
+////				 fileOuputStream .write(data);
+////				 }
+//		   
+//		   
+////		   if (file != null && file.exists()) {
+////	           byte[] bytesArray = new byte[(int) file.length()]; 	
+////	           FileInputStream fis = new FileInputStream(file);
+////	           fis.read(bytesArray); //read file into bytes[]
+////	           fis.close();	
+////	           
+////	          rawDataText = new String(bytesArray, StandardCharsets.ISO_8859_1);	
+////	          if (ext.equalsIgnoreCase("pdf")) {
+////	          rawDataText = rawDataText.replaceAll("\r\n\r\n", "\r\n");
+////	          
+////	           }
+////           }
+//           
+//		//	 String textfile = "uploads/"+ retrivedtxtfile +".txt";
+//			 
+//		   if (textfilename != null) {
+////	           byte[] bytesArray = new byte[(int) textfile.length()]; 	
+////	           FileInputStream fis = new FileInputStream(textfile);
+////	           fis.read(bytesArray); //read file into bytes[]
+////	           fis.close();	
+//	           
+//	          rawDataText = new String(txtdata, StandardCharsets.ISO_8859_1);	
+//	          if (ext.equalsIgnoreCase("pdf")) {
+//	          rawDataText = rawDataText.replaceAll("\r\n\r\n", "\r\n");
+//	          
+//	           }
+//           }
+//		   
+//           return rawDataText;
+//         
+//        } 	  
+//        catch (IOException e) 
+//        { 
+//        	return null;
+//        } 
+//   }
+//   
+        
+   public String getFileData(final String fileName,String tenant) throws FileNotFoundException, IOException
+
+   {
 	   try
         {			
 		   File file = null;
 		   final String ext = FilenameUtils.getExtension(fileName); 
 		   String rawDataText="";
-		 
-		   if (ext.equalsIgnoreCase("pdf")) {		
-		   //if (fileName.toLowerCase().endsWith(".pdf")) {
-			   //final String filePath = "uploads/"+fileName.substring(0, fileName.lastIndexOf(".")) +".txt";
-			   final String name = FilenameUtils.getBaseName(fileName);				  
-			   final String filePath = "uploads/"+ name + ".txt";
-			     
-			   file = new File(filePath);
-			   if (!file.exists()) {
-				   
-//		           final String command =  "pdftotext.exe -layout " + '"'+ "uploads/" + fileName + '"';
-//			        
-//		           final Runtime run  = Runtime.getRuntime(); 
-//		           final Process proc = run.exec(command); 	
-//		        
-//		           try {
-//					Thread.sleep(3000);
-//				} catch (InterruptedException e2) {
-//					// TODO Auto-generated catch block
-//					e2.printStackTrace();
-//				}
-				   
-				   String parsedText = "";
-				   PDFParser parser = null;
-				    PDDocument pdDoc = null;
-				    COSDocument cosDoc = null;
-				    PDFTextStripper pdfStripper;
-
-				    try {
-				    	RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(new File("uploads/"+fileName));
-				        parser = new PDFParser(raFile);
-				        parser.setLenient(true);
-				        parser.parse();
-				        cosDoc = parser.getDocument();
-				        pdfStripper = new PDFTextStripper();
-				        pdDoc = new PDDocument(cosDoc);
-				        pdfStripper.setAddMoreFormatting(true);
-				        pdfStripper.setWordSeparator("\t");
-				        pdfStripper.setSuppressDuplicateOverlappingText(true);
-				        Matrix matrix = new Matrix();
-				        matrix.clone();
-				        pdfStripper.setTextLineMatrix(matrix);
-				   
-				        parsedText = pdfStripper.getText(pdDoc);
-				        
-				        if (!file.exists()) {
-				            file.createNewFile();
-				        }
-
-				        FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
-				        BufferedWriter bw = new BufferedWriter(fw);
-
-				        bw.write(parsedText);
-				        bw.close();
-				        System.out.println(parsedText.replaceAll("[^A-Za-z0-9. ]+", ""));
-				        
-				    } catch (Exception e) {
-				        e.printStackTrace();
-				        try {
-				            if (cosDoc != null)
-				                cosDoc.close();
-				            if (pdDoc != null)
-				                pdDoc.close();
-				        } catch (Exception e1) {
-				            e1.printStackTrace();
-				        }
-
-				    }
-		        
-		          
-			   }		           
-		   }
-		   else
-		   {
-			   final String filePath = "uploads/"+fileName;
-			   file = new File(filePath);
-		   } 
 		   
-		   if (file != null && file.exists()) {
-	           byte[] bytesArray = new byte[(int) file.length()]; 	
-	           FileInputStream fis = new FileInputStream(file);
-	           fis.read(bytesArray); //read file into bytes[]
-	           fis.close();	
-	           
-	          rawDataText = new String(bytesArray, StandardCharsets.ISO_8859_1);	
-	          if (ext.equalsIgnoreCase("pdf")) {
-	          rawDataText = rawDataText.replaceAll("\r\n\r\n", "\r\n");
-	          }
-           }
-           
+		   final String name = FilenameUtils.getBaseName(fileName);
+		   
+		   CloudParserFile obj = cloudparserfilerepository.findTop1Byfilename(fileName);
+		   String fileid = obj.fileid;
+			 
+		   file = stream2file(cloudFileManipulationservice.retrieveCloudFile(fileid, tenant + "parserfile"),fileName, ext);
+		    
+		    if(file !=null)
+		    {
+			   if (ext.equalsIgnoreCase("pdf")) {
+	
+					   String parsedText = "";
+					   PDFParser parser = null;
+					    PDDocument pdDoc = null;
+					    COSDocument cosDoc = null;
+					    PDFTextStripper pdfStripper;
+	
+					    try {
+					    	RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(file);
+					        parser = new PDFParser(raFile);
+					        parser.setLenient(true);
+					        parser.parse();
+					        cosDoc = parser.getDocument();
+					        pdfStripper = new PDFTextStripper();
+					        pdfStripper.setSortByPosition( true );
+					              			       
+					        pdDoc = new PDDocument(cosDoc);
+					        pdfStripper.setWordSeparator("\t");
+					        pdfStripper.setSuppressDuplicateOverlappingText(true);
+					        Matrix matrix = new Matrix();
+					        matrix.clone();
+					        pdfStripper.setTextLineMatrix(matrix);
+					   
+					        parsedText = pdfStripper.getText(pdDoc);
+					      					        
+					        //converting into multipart file
+						        MultipartFile convertedmultipartfile = new MockMultipartFile(fileName,
+						        		fileName, "text/plain", parsedText.getBytes());
+						        
+						        //storing file in blob
+						        String textid = null;
+					    		try {
+					    			textid = cloudFileManipulationservice.storecloudfilesreturnUUID(convertedmultipartfile, "parsertextfile");
+					    		} catch (IOException e) {
+					    			// TODO Auto-generated catch block
+					    			e.printStackTrace();
+					    		}
+			
+					    		CloudParserFile objfile = new CloudParserFile();
+					    		objfile.setFileid(textid);
+					    		objfile.setExtension(".txt");
+					    		objfile.setFilename(name+".txt");
+					    			
+					    		cloudparserfilerepository.save(objfile);
+					    } catch (Exception e) {
+					        e.printStackTrace();
+					        try {
+					            if (cosDoc != null)
+					                cosDoc.close();
+					            if (pdDoc != null)
+					                pdDoc.close();
+					        } catch (Exception e1) {
+					            e1.printStackTrace();
+					        }
+	
+					    }    
+					    
+					    rawDataText = new String(parsedText.getBytes(), StandardCharsets.ISO_8859_1);
+				 
+				        rawDataText = rawDataText.replaceAll("\r\n\r\n", "\r\n");
+					   
+			   }
+			   else
+			   {
+				   rawDataText = new String(Files.readAllBytes(file.toPath()), StandardCharsets.ISO_8859_1);
+			   }
+		   
+		    }
+		 	   
+		   
            return rawDataText;
          
         } 	  
@@ -499,7 +1032,74 @@ public class MethodService {
         	return null;
         } 
    }
+   
+   public static File stream2file (InputStream in,String filename,String ext) throws IOException {
+       final File tempFile = File.createTempFile(filename, ext);
+       tempFile.deleteOnExit();
+       try (FileOutputStream out = new FileOutputStream(tempFile)) {
+           IOUtils.copy(in, out);
+       }
+       return tempFile;
+   }
+   
+   
+   public String getSQLFileData(String fileName) throws IOException {
+	
+		String Content = "";
+		  String rawDataText="";
+		final String ext = FilenameUtils.getExtension(fileName); 
+		
+	   String fileid = fileName;
+		GridFSDBFile largefile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(fileid)));
+		if (largefile == null) {
+			largefile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(fileid)));
+		}
 
+		if (largefile != null) {
+			
+			if (ext.equalsIgnoreCase("pdf")) {
+				
+				   String parsedText = "";
+				   PDFParser parser = null;
+				    PDDocument pdDoc = null;
+				    COSDocument cosDoc = null;
+				    PDFTextStripper pdfStripper;
+
+//				    try {
+				    	RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(largefile.getInputStream());
+				        parser = new PDFParser(raFile);
+				        parser.setLenient(true);
+				        parser.parse();
+				        cosDoc = parser.getDocument();
+				        pdfStripper = new PDFTextStripper();
+				        pdfStripper.setSortByPosition( true );
+				              			       
+				        pdDoc = new PDDocument(cosDoc);
+				        pdfStripper.setWordSeparator("\t");
+				        pdfStripper.setSuppressDuplicateOverlappingText(true);
+				        Matrix matrix = new Matrix();
+				        matrix.clone();
+				        pdfStripper.setTextLineMatrix(matrix);
+				   
+				        parsedText = pdfStripper.getText(pdDoc);
+				        
+				        rawDataText = new String(parsedText.getBytes(), StandardCharsets.ISO_8859_1);
+				        rawDataText = rawDataText.replaceAll("\r\n\r\n", "\r\n");
+			}
+			else
+			{
+			        rawDataText = new BufferedReader(
+					new InputStreamReader(largefile.getInputStream(), StandardCharsets.UTF_8)).lines()
+							.collect(Collectors.joining("\n"));
+			
+		} 
+			}	
+		
+	
+		return rawDataText;
+   }  
+   
+   
    /**
     * This method is used to get Method entity based on its primary key
     * @param methodKey [int] primary key of method entity
@@ -522,13 +1122,13 @@ public class MethodService {
 	 **/  
    @SuppressWarnings("unchecked")
    @Transactional
-   public ResponseEntity<Object> createCopyMethod(final HttpServletRequest request, final Map<String, Object> mapObject){
+   public ResponseEntity<Object> createCopyMethod(final HttpServletRequest request, final Map<String, Object> mapObject, final int doneByUserKey){
 	   
 	   final ObjectMapper mapper = new ObjectMapper();
 	   
 	   final Boolean saveAuditTrail = mapper.convertValue(mapObject.get("saveAuditTrail"), Boolean.class);
 	   final LSSiteMaster site = mapper.convertValue(mapObject.get("site"), LSSiteMaster.class);
-	   final int doneByUserKey = (Integer) mapObject.get("doneByUserKey");
+	 //  final int doneByUserKey = (Integer) mapObject.get("doneByUserKey");
 	   //final Page page = mapper.convertValue(mapObject.get("modulePage"), Page.class);
 	   final int methodKey= (Integer) mapObject.get("methodKey");
 	   final String methodName= (String) mapObject.get("methodName");
@@ -543,6 +1143,28 @@ public class MethodService {
 	   
 	   if (methodByKey.isPresent() && instMaster != null) {		 
 		   
+		   if(methodName.equals(methodByKey.get().getMethodname()))
+		   {
+               if(saveAuditTrail) {			   
+			   LScfttransaction LScfttransaction = new LScfttransaction();
+			   
+				LScfttransaction.setActions("Update");
+				LScfttransaction.setComments("Duplicate Entry "+methodByKey.get().getMethodname());
+				LScfttransaction.setLssitemaster(site.getSitecode());
+				LScfttransaction.setLsuserMaster(doneByUserKey);
+				LScfttransaction.setManipulatetype("View/Load");
+				LScfttransaction.setModuleName("Method Master");
+				LScfttransaction.setTransactiondate(date);
+				LScfttransaction.setUsername(createdUser.getUsername());
+				LScfttransaction.setTableName("Method");
+				LScfttransaction.setSystemcoments("System Generated");
+				
+				lscfttransactionrepo.save(LScfttransaction);
+                }
+			   return new ResponseEntity<>("Duplicate Entry - " + methodByKey.get().getMethodname() +" method cannot be copied", 
+  					 HttpStatus.CONFLICT); 
+		   }
+		   else {
 		   final Method methodBeforeSave = new Method(methodByKey.get());
 		   
 		   //Making entry in 'method' table for the selected instrument
@@ -739,8 +1361,23 @@ public class MethodService {
 //		    	auditMethodCopy(methodBeforeSave, updatedMethod, request, savedSampleSplitMap, savedParserMap, customFieldListBS,
 //		    			savedCustomFieldList, createdUser, comments, site);				
 //			}
+	    	
+			LScfttransaction LScfttransaction = new LScfttransaction();
+			LScfttransaction.setActions("Insert");
+			LScfttransaction.setComments("Method copied from : "+methodByKey.get().getMethodname()+" to "+methodName);
+			LScfttransaction.setLssitemaster(site.getSitecode());
+			LScfttransaction.setLsuserMaster(doneByUserKey);
+			LScfttransaction.setManipulatetype("View/Load");
+			LScfttransaction.setModuleName("Method Master");
+			LScfttransaction.setUsername(createdUser.getUsername());
+
+			LScfttransaction.setTransactiondate(date);
+			LScfttransaction.setTableName("SampleExtract");
+			LScfttransaction.setSystemcoments("System Generated");
+			
+			lscfttransactionrepo.save(LScfttransaction);
 		    return new ResponseEntity<>(savedMethod, HttpStatus.OK);
-		  
+		   }
 	   }
 	   else {
 		   
@@ -888,5 +1525,9 @@ public class MethodService {
 		   
 	   return new ResponseEntity<>(existingMethod, HttpStatus.OK);
    }
+
+
+
+
    
 }
