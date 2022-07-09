@@ -9,7 +9,7 @@
     },
     {
       "sourceType": "com.agaram.eln.secondary.config.ArchieveDataSourceConfiguration",
-      "name": "app.datasource.archive.configuration",
+      "name": "app.datasource.archive.hikari",
       "sourceMethod": "public javax.sql.DataSource archiveDataSource() ",
       "type": "javax.sql.DataSource"
     },
@@ -27,7 +27,7 @@
     },
     {
       "sourceType": "com.agaram.eln.primary.config.HibernateConfig",
-      "name": "app.datasource.eln.configuration",
+      "name": "app.datasource.eln.hikari",
       "sourceMethod": "public javax.sql.DataSource elnDataSource() ",
       "type": "javax.sql.DataSource"
     },
