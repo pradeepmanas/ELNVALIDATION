@@ -173,3 +173,183 @@ values (NOW(),NOW(),-1,'Sheet/my order', 124, 'my order');
 
 update lslogilablimsorderdetail set directorycode = 1;
 
+DO
+$do$
+DECLARE
+   _kind "char";
+BEGIN
+   SELECT relkind
+   FROM   pg_class
+   WHERE  relname = 'lsresultfieldvalues_sno_seq' 
+   INTO  _kind;
+
+   IF NOT FOUND THEN       
+      CREATE SEQUENCE lsresultfieldvalues_sno_seq;
+   ELSIF _kind = 'S' THEN  
+      -- do nothing?
+   ELSE                    -- object name exists for different kind
+      -- do something!
+   END IF;
+END
+$do$;
+
+
+CREATE TABLE IF NOT EXISTS public.lsresultfieldvalues
+(
+    sno integer NOT NULL DEFAULT nextval('lsresultfieldvalues_sno_seq'::regclass),
+    fieldname character varying(100) COLLATE pg_catalog."default",
+    fieldvalue character varying(100) COLLATE pg_catalog."default",
+    resseqno integer,
+    resultid integer,
+    CONSTRAINT lsresultfieldvalues_pkey PRIMARY KEY (sno),
+    CONSTRAINT fk6awbvwq8363r0pdi4dmsf6g58 FOREIGN KEY (resultid)
+        REFERENCES public.elnresultdetails (resultid) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.lsresultfieldvalues
+    OWNER to postgres;
+    
+ALTER TABLE IF Exists elnresultdetails ADD COLUMN IF NOT EXISTS parserfieldkey integer;
+
+ALTER TABLE IF Exists lsprotocolorderversion ADD COLUMN IF NOT EXISTS createdby integer;
+    
+INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 78, 'Unlock Orders', 'Base Master', '0', 'NA', 'NA', '0', '0,0,1',73 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Unlock Orders'); 
+
+INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode) SELECT 'Unlock Orders', 'Base Master', 'administrator', '1', 'NA', 'NA', '1', 1,1  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Unlock Orders' and usergroupid_usergroupcode = 1); 
+
+ALTER TABLE IF Exists LSusergrouprights ADD COLUMN IF NOT EXISTS sequenceorder integer;
+
+
+ 
+update LSusergrouprightsmaster set sequenceorder = 1 where modulename = 'Dash Board';
+update LSusergrouprightsmaster set sequenceorder = 2 where modulename = 'Register Task Orders & Execute';
+update LSusergrouprightsmaster set sequenceorder = 3 where modulename = 'Protocol Order And Register';
+update LSusergrouprightsmaster set sequenceorder = 4 where modulename = 'Templates';
+update LSusergrouprightsmaster set sequenceorder = 5 where modulename = 'Sheet Settings';
+update LSusergrouprightsmaster set sequenceorder = 6 where modulename = 'Base Master';
+update LSusergrouprightsmaster set sequenceorder = 7 where modulename = 'UserManagement';
+update LSusergrouprightsmaster set sequenceorder = 8 where modulename = 'User Group';
+update LSusergrouprightsmaster set sequenceorder = 9 where modulename = 'User Master';
+update LSusergrouprightsmaster set sequenceorder = 10 where modulename = 'AuditTrail History';
+update LSusergrouprightsmaster set sequenceorder = 11 where modulename = 'Reports';
+update LSusergrouprightsmaster set sequenceorder = 12 where modulename = 'Parser';
+update LSusergrouprightsmaster set sequenceorder = 13 where modulename = 'Inventory';
+
+update LSusergrouprights set sequenceorder = 1 where modulename = 'Dash Board';
+update LSusergrouprights set sequenceorder = 2 where modulename = 'Register Task Orders & Execute';
+update LSusergrouprights set sequenceorder = 3 where modulename = 'Protocol Order And Register';
+update LSusergrouprights set sequenceorder = 4 where modulename = 'Templates';
+update LSusergrouprights set sequenceorder = 5 where modulename = 'Sheet Settings';
+update LSusergrouprights set sequenceorder = 6 where modulename = 'Base Master';
+update LSusergrouprights set sequenceorder = 7 where modulename = 'UserManagement';
+update LSusergrouprights set sequenceorder = 8 where modulename = 'User Group';
+update LSusergrouprights set sequenceorder = 9 where modulename = 'User Master';
+update LSusergrouprights set sequenceorder = 10 where modulename = 'AuditTrail History';
+update LSusergrouprights set sequenceorder = 11 where modulename = 'Reports';
+update LSusergrouprights set sequenceorder = 12 where modulename = 'Parser';
+update LSusergrouprights set sequenceorder = 13 where modulename = 'Inventory';
+
+ALTER TABLE IF Exists LSaudittrailconfiguration ADD COLUMN IF NOT EXISTS ordersequnce integer;
+
+update LSaudittrailconfigmaster set ordersequnce = 1 where modulename = 'Register Orders & Execute';
+update LSaudittrailconfigmaster set ordersequnce = 2 where modulename = 'Protocol Order And Register';
+update LSaudittrailconfigmaster set ordersequnce = 3 where modulename = 'Sheet Creation';
+update LSaudittrailconfigmaster set ordersequnce = 4 where modulename = 'Protocols';
+update LSaudittrailconfigmaster set ordersequnce = 5 where modulename = 'Sheet Setting';
+update LSaudittrailconfigmaster set ordersequnce = 6 where modulename = 'Base Master';
+update LSaudittrailconfigmaster set ordersequnce = 7 where modulename = 'User Management';
+update LSaudittrailconfigmaster set ordersequnce = 10 where modulename = 'Audit Trail';
+update LSaudittrailconfigmaster set ordersequnce = 11 where modulename = 'Reports';
+update LSaudittrailconfigmaster set ordersequnce = 12 where modulename = 'Parser';
+
+update LSaudittrailconfiguration set ordersequnce = 1 where modulename = 'Register Orders & Execute';
+update LSaudittrailconfiguration set ordersequnce = 2 where modulename = 'Protocol Order And Register';
+update LSaudittrailconfiguration set ordersequnce = 3 where modulename = 'Sheet Creation';
+update LSaudittrailconfiguration set ordersequnce = 4 where modulename = 'Protocols';
+update LSaudittrailconfiguration set ordersequnce = 5 where modulename = 'Sheet Setting';
+update LSaudittrailconfiguration set ordersequnce = 6 where modulename = 'Base Master';
+update LSaudittrailconfiguration set ordersequnce = 7 where modulename = 'User Management';
+update LSaudittrailconfiguration set ordersequnce = 10 where modulename = 'Audit Trail';
+update LSaudittrailconfiguration set ordersequnce = 11 where modulename = 'Reports';
+update LSaudittrailconfiguration set ordersequnce = 12 where modulename = 'Parser';
+  
+CREATE TABLE IF NOT EXISTS public.cloudparserfile
+(
+    parserfilecode integer NOT NULL,
+    extension character varying(255) COLLATE pg_catalog."default",
+    fileid character varying(255) COLLATE pg_catalog."default",
+    filename character varying(255) COLLATE pg_catalog."default",
+    originalfilename character varying(255) COLLATE pg_catalog."default",
+    CONSTRAINT cloudparserfile_pkey PRIMARY KEY (parserfilecode)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.cloudparserfile
+    OWNER to postgres;
+
+
+update LSusergrouprightsmaster set displaytopic = 'Pending Work' where displaytopic = 'Pending' and sequenceorder = 3;
+update LSusergrouprightsmaster set displaytopic = 'Completed Work' where displaytopic = 'Completed' and sequenceorder = 3;
+update LSusergrouprights set displaytopic = 'Pending Work' where displaytopic = 'Pending' and sequenceorder = 3;
+update LSusergrouprights set displaytopic = 'Completed Work' where displaytopic = 'Completed' and sequenceorder = 3;
+
+
+
+DO
+$do$
+DECLARE
+    counter integer := 0;
+BEGIN
+  select count(*) into counter from methoddelimiter where delimiterkey = 1;
+
+   IF counter=0 THEN       -- name is free
+INSERT into methoddelimiter (status, usercode, delimiterkey, parsermethodkey)
+SELECT 1,1,1,1
+WHERE NOT EXISTS (select * from methoddelimiter where delimiterkey = 1); 
+   END IF;
+END
+$do$;
+
+DO
+$do$
+DECLARE
+    counter integer := 0;
+BEGIN
+  select count(*) into counter from delimiter where delimitername='None';
+
+   IF counter=0 THEN       -- name is free
+INSERT into delimiter (delimitername,actualdelimiter,status,usercode) 
+SELECT 'None', 'None', 1, 1 WHERE NOT EXISTS (SELECT delimitername FROM delimiter WHERE delimitername = 'None'); 
+ELSE
+update delimiter set actualdelimiter = 'None' where delimitername='None' and status=1;
+END IF;
+END
+$do$;
+
+
+INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 80, 'Orders Shared By Me', 'Protocol Order And Register', '0', 'NA', 'NA', '0', '0,0,1',3 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Orders Shared By Me' and modulename = 'Protocol Order And Register'); 
+
+INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode,sequenceorder) SELECT 'Orders Shared By Me', 'Protocol Order And Register', 'administrator', '1', 'NA', 'NA', '1', 1,1,3  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Orders Shared By Me' and modulename = 'Protocol Order And Register' and usergroupid_usergroupcode = 1); 
+
+INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 81, 'Orders Shared To Me', 'Protocol Order And Register', '0', 'NA', 'NA', '0', '0,0,1',3 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Orders Shared To Me' and modulename = 'Protocol Order And Register'); 
+
+INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode,sequenceorder) SELECT 'Orders Shared To Me', 'Protocol Order And Register', 'administrator', '1', 'NA', 'NA', '1', 1,1,3  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Orders Shared To Me' and modulename = 'Protocol Order And Register' and usergroupid_usergroupcode = 1);
+
+delete from LSaudittrailconfigmaster where modulename = 'Parser' ; 
+
+ALTER TABLE IF Exists lsprotocolordersampleupdates ADD COLUMN IF NOT EXISTS unit varchar(250);
+
+ALTER TABLE IF Exists lsprotocolsampleupdates ADD COLUMN IF NOT EXISTS unit varchar(250);
+
+update LSusergrouprightsmaster set sedit='0' where displaytopic = 'User Group' and modulename= 'UserManagement';
+
+ALTER TABLE LSreviewdetails ALTER COLUMN reviewcomments TYPE varchar(250);
