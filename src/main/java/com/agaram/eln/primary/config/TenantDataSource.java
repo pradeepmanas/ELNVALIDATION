@@ -67,8 +67,8 @@ public class TenantDataSource implements Serializable {
 	@PostConstruct
     public Map<String, DataSource> getAll() {
 //		agaramtech.onmicrosoft.com
-		List<Datasourcemaster> configList = configRepo.findBytenantid("agaram");
-//        List<Datasourcemaster> configList = configRepo.findByinitialize(true);
+		//List<Datasourcemaster> configList = configRepo.findBytenantid("agaramtech.onmicrosoft.com");
+        List<Datasourcemaster> configList = configRepo.findByinitialize(true);
 //        logger.info("Get all datasource");
         Map<String, DataSource> result = new HashMap<>();
         try {
@@ -114,9 +114,9 @@ public class TenantDataSource implements Serializable {
             
         HikariDataSource dataSource = new HikariDataSource(configuration);
         
-        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
-        flyway.repair();
-        flyway.migrate();
+//        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+//        flyway.repair();
+//        flyway.migrate();
         
         return dataSource;
         }
