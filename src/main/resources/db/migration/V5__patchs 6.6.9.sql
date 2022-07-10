@@ -56,3 +56,51 @@ ALTER TABLE IF Exists LSreviewdetails ADD COLUMN IF NOT EXISTS reviewvercomments
 ALTER TABLE IF Exists LSreviewdetails ADD COLUMN IF NOT EXISTS auditusername varchar(250);
 ALTER TABLE IF Exists LSreviewdetails ADD COLUMN IF NOT EXISTS action varchar(250);
 
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (65, 'Inventory', 'Base Master', '0', '0', '0', '0', '1,1,1',70) ON CONFLICT(orderno)DO NOTHING;
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (66, 'Add repository', 'Inventory', '0', '0', 'NA', 'NA', '1,0,0',71) ON CONFLICT(orderno)DO NOTHING;
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (67, 'Edit repository', 'Inventory', '0', '0', 'NA', 'NA', '1,0,0',71) ON CONFLICT(orderno)DO NOTHING;
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (68, 'Instrument Category', 'Parser', '0', '0', '0', '0', '1,1,1',72) ON CONFLICT(orderno)DO NOTHING;
+
+update lsusergrouprightsmaster set sedit = '0' where modulename = 'Parser' and displaytopic != 'Parser';
+update lsusergrouprights set sedit = '0' where modulename = 'Parser' and displaytopic != 'Parser' and sedit='NA';
+
+update lsusergrouprightsmaster set modulename = 'Templates' where modulename ='Protocol Templates';
+update lsusergrouprightsmaster set modulename = 'Templates' where modulename ='Sheet Templates';
+update lsusergrouprights set modulename = 'Templates' where modulename ='Protocol Templates';
+update lsusergrouprights set modulename = 'Templates' where modulename ='Sheet Templates';
+
+update lsusergrouprights set sallow = '0' where modulename= 'Sheet Settings' and displaytopic = 'LIMS Test  Order';
+update lsusergrouprightsmaster set sallow = '0' where modulename= 'Sheet Settings' and displaytopic = 'LIMS Test  Order';
+
+update lsusergrouprightsmaster set displaytopic = 'Sheet Templates' where displaytopic = 'Sheet Creation';
+update lsusergrouprights set displaytopic = 'Sheet Templates' where displaytopic = 'Sheet Creation';
+
+ALTER TABLE lsnotification ALTER COLUMN CreatedTimeStamp TYPE timestamp without time zone;
+
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (69, 'Templates Shared By Me', 'Templates', '0', 'NA', 'NA', 'NA', '0,0,0',73) ON CONFLICT(orderno)DO NOTHING;
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder) VALUES (70, 'Templates Shared To Me', 'Templates', '0', 'NA', 'NA', 'NA', '0,0,0',74) ON CONFLICT(orderno)DO NOTHING;
+
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder)VALUES (71, 'Sheet', 'Sheet Settings', '0', 'NA', 'NA', 'NA', '0,0,0',75) ON CONFLICT(orderno)DO NOTHING;
+INSERT into LSusergrouprightsmaster(orderno, displaytopic, modulename, sallow, screate,sdelete, sedit, status,sequenceorder)VALUES (72, 'Protocol', 'Sheet Settings', '0', 'NA', 'NA', 'NA', '0,0,0',76) ON CONFLICT(orderno)DO NOTHING;
+
+Insert into LSaudittrailconfigmaster values(62,0,'Parser',59,'Delimiter','Save') ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(63,0,'Parser',60,'Delimiter','Edit')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(64,0,'Parser',61,'Delimiter','Delete')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(65,0,'Parser',62,'MethodDelimiter','Save')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(66,0,'Parser',63,'MethodDelimiter','Edit')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(67,0,'Parser',64,'MethodDelimiter','Delete')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(68,0,'Parser',65,'MethodMaster','Save')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(69,0,'Parser',66,'MethodMaster','Edit')ON CONFLICT(serialno)DO NOTHING;
+Insert into LSaudittrailconfigmaster values(70,0,'Parser',67,'MethodMaster','Delete')ON CONFLICT(serialno)DO NOTHING;
+
+insert into lsaudittrailconfigmaster values(71,0,'Base Master',68,'Repository','Save')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(72,0,'Base Master',69,'Repository','Edit')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(73,0,'Base Master',70,'Inventory','Save')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(74,0,'Base Master',71,'Inventory','Edit')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(75,0,'Base Master',72,'Inventory','Delete')ON CONFLICT(serialno)DO NOTHING;
+
+insert into lsaudittrailconfigmaster values(76,0,'Register Orders & Execute',8,'Register Orders & Execute','Parse Data')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(77,0,'Protocol Order And Register',73,'Protocol Order And Register','Register Protocol')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(78,0,'Protocol Order And Register',74,'Protocol Order And Register','Process Protocol')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(79,0,'Protocol Order And Register',75,'Protocol Order And Register','Save')ON CONFLICT(serialno)DO NOTHING;
+insert into lsaudittrailconfigmaster values(80,0,'Protocol Order And Register',77,'Protocol Order And Register','Complete task')ON CONFLICT(serialno)DO NOTHING;
