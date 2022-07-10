@@ -301,20 +301,3 @@ update LSusergrouprightsmaster set displaytopic = 'Completed Work' where display
 update LSusergrouprights set displaytopic = 'Pending Work' where displaytopic = 'Pending' and sequenceorder = 3;
 update LSusergrouprights set displaytopic = 'Completed Work' where displaytopic = 'Completed' and sequenceorder = 3;
 
-INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 80, 'Orders Shared By Me', 'Protocol Order And Register', '0', 'NA', 'NA', '0', '0,0,1',3 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Orders Shared By Me' and modulename = 'Protocol Order And Register'); 
-
-INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode,sequenceorder) SELECT 'Orders Shared By Me', 'Protocol Order And Register', 'administrator', '1', 'NA', 'NA', '1', 1,1,3  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Orders Shared By Me' and modulename = 'Protocol Order And Register' and usergroupid_usergroupcode = 1); 
-
-INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 81, 'Orders Shared To Me', 'Protocol Order And Register', '0', 'NA', 'NA', '0', '0,0,1',3 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Orders Shared To Me' and modulename = 'Protocol Order And Register'); 
-
-INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode,sequenceorder) SELECT 'Orders Shared To Me', 'Protocol Order And Register', 'administrator', '1', 'NA', 'NA', '1', 1,1,3  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Orders Shared To Me' and modulename = 'Protocol Order And Register' and usergroupid_usergroupcode = 1);
-
-delete from LSaudittrailconfigmaster where modulename = 'Parser' ; 
-
-ALTER TABLE IF Exists lsprotocolordersampleupdates ADD COLUMN IF NOT EXISTS unit varchar(250);
-
-ALTER TABLE IF Exists lsprotocolsampleupdates ADD COLUMN IF NOT EXISTS unit varchar(250);
-
-update LSusergrouprightsmaster set sedit='0' where displaytopic = 'User Group' and modulename= 'UserManagement';
-
-ALTER TABLE LSreviewdetails ALTER COLUMN reviewcomments TYPE varchar(250);
