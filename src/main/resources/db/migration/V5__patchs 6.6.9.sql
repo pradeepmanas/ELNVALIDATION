@@ -303,39 +303,6 @@ update LSusergrouprights set displaytopic = 'Pending Work' where displaytopic = 
 update LSusergrouprights set displaytopic = 'Completed Work' where displaytopic = 'Completed' and sequenceorder = 3;
 
 
-
-DO
-$do$
-DECLARE
-    counter integer := 0;
-BEGIN
-  select count(*) into counter from methoddelimiter where delimiterkey = 1;
-
-   IF counter=0 THEN       -- name is free
-INSERT into methoddelimiter (status, usercode, delimiterkey, parsermethodkey)
-SELECT 1,1,1,1
-WHERE NOT EXISTS (select * from methoddelimiter where delimiterkey = 1); 
-   END IF;
-END
-$do$;
-
-DO
-$do$
-DECLARE
-    counter integer := 0;
-BEGIN
-  select count(*) into counter from delimiter where delimitername='None';
-
-   IF counter=0 THEN       -- name is free
-INSERT into delimiter (delimitername,actualdelimiter,status,usercode) 
-SELECT 'None', 'None', 1, 1 WHERE NOT EXISTS (SELECT delimitername FROM delimiter WHERE delimitername = 'None'); 
-ELSE
-update delimiter set actualdelimiter = 'None' where delimitername='None' and status=1;
-END IF;
-END
-$do$;
-
-
 INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 80, 'Orders Shared By Me', 'Protocol Order And Register', '0', 'NA', 'NA', '0', '0,0,1',3 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Orders Shared By Me' and modulename = 'Protocol Order And Register'); 
 
 INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode,sequenceorder) SELECT 'Orders Shared By Me', 'Protocol Order And Register', 'administrator', '1', 'NA', 'NA', '1', 1,1,3  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Orders Shared By Me' and modulename = 'Protocol Order And Register' and usergroupid_usergroupcode = 1); 
