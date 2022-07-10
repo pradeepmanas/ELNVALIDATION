@@ -219,12 +219,7 @@ ALTER TABLE IF Exists elnresultdetails ADD COLUMN IF NOT EXISTS parserfieldkey i
 
 ALTER TABLE IF Exists lsprotocolorderversion ADD COLUMN IF NOT EXISTS createdby integer;
     
-INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 78, 'Unlock Orders', 'Base Master', '0', 'NA', 'NA', '0', '0,0,1',73 WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Unlock Orders'); 
-
-INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode) SELECT 'Unlock Orders', 'Base Master', 'administrator', '1', 'NA', 'NA', '1', 1,1  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Unlock Orders' and usergroupid_usergroupcode = 1); 
-
 ALTER TABLE IF Exists LSusergrouprights ADD COLUMN IF NOT EXISTS sequenceorder integer;
-
 
  
 update LSusergrouprightsmaster set sequenceorder = 1 where modulename = 'Dash Board';
