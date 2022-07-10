@@ -68,11 +68,11 @@ public class TenantDataSource implements Serializable {
     public Map<String, DataSource> getAll() {
 //		agaramtech.onmicrosoft.com
 		//List<Datasourcemaster> configList = configRepo.findBytenantid("agaramtech.onmicrosoft.com");
-        List<Datasourcemaster> configList = configRepo.findByinitialize(true);
+        List<DataSourceConfig> configList = configRepo.findByInitialize(true);
 //        logger.info("Get all datasource");
         Map<String, DataSource> result = new HashMap<>();
         try {
-	        for (Datasourcemaster config : configList) {
+	        for (DataSourceConfig config : configList) {
 	            DataSource dataSource = getDataSource(config.getName(), config.getArchivename());
 	            result.put(config.getName(), dataSource); 
 	            
