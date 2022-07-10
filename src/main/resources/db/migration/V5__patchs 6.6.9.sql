@@ -173,48 +173,7 @@ values (NOW(),NOW(),-1,'Sheet/my order', 124, 'my order');
 
 update lslogilablimsorderdetail set directorycode = 1;
 
-DO
-$do$
-DECLARE
-   _kind "char";
-BEGIN
-   SELECT relkind
-   FROM   pg_class
-   WHERE  relname = 'lsresultfieldvalues_sno_seq' 
-   INTO  _kind;
 
-   IF NOT FOUND THEN       
-      CREATE SEQUENCE lsresultfieldvalues_sno_seq;
-   ELSIF _kind = 'S' THEN  
-      -- do nothing?
-   ELSE                    -- object name exists for different kind
-      -- do something!
-   END IF;
-END
-$do$;
-
-
-CREATE TABLE IF NOT EXISTS public.lsresultfieldvalues
-(
-    sno integer NOT NULL DEFAULT nextval('lsresultfieldvalues_sno_seq'::regclass),
-    fieldname character varying(100) COLLATE pg_catalog."default",
-    fieldvalue character varying(100) COLLATE pg_catalog."default",
-    resseqno integer,
-    resultid integer,
-    CONSTRAINT lsresultfieldvalues_pkey PRIMARY KEY (sno),
-    CONSTRAINT fk6awbvwq8363r0pdi4dmsf6g58 FOREIGN KEY (resultid)
-        REFERENCES public.elnresultdetails (resultid) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-)
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
-ALTER TABLE public.lsresultfieldvalues
-    OWNER to postgres;
-    
 ALTER TABLE IF Exists elnresultdetails ADD COLUMN IF NOT EXISTS parserfieldkey integer;
 
 ALTER TABLE IF Exists lsprotocolorderversion ADD COLUMN IF NOT EXISTS createdby integer;
