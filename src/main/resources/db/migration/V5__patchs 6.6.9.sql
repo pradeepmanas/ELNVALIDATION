@@ -309,4 +309,42 @@ update LSusergrouprightsmaster set sedit='0' where displaytopic = 'User Group' a
 
 ALTER TABLE LSreviewdetails ALTER COLUMN reviewcomments TYPE varchar(250);
 
+DO
+$do$
+DECLARE
+   _kind "char";
+BEGIN
+   SELECT relkind
+   FROM   pg_class
+   WHERE  relname = 'lsresultfieldvalues_sno_seq' 
+   INTO  _kind;
+
+   IF NOT FOUND THEN       
+      CREATE SEQUENCE lsresultfieldvalues_sno_seq;
+   ELSIF _kind = 'S' THEN  
+      -- do nothing?
+   ELSE                    -- object name exists for different kind
+      -- do something!
+   END IF;
+END
+$do$;
+
+
+CREATE TABLE IF NOT EXISTS public.lsresultfieldvalues
+(
+    sno integer NOT NULL DEFAULT nextval('lsresultfieldvalues_sno_seq'::regclass),
+    fieldname character varying(100) COLLATE pg_catalog."default",
+    fieldvalue character varying(100) COLLATE pg_catalog."default",
+    resseqno integer,
+    resultid integer,
+    CONSTRAINT lsresultfieldvalues_pkey PRIMARY KEY (sno)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.lsresultfieldvalues
+    OWNER to postgres;
+
 
