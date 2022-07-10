@@ -296,38 +296,6 @@ ALTER TABLE public.cloudparserfile
     OWNER to postgres;
 
 
-DO
-$do$
-DECLARE
-    counter integer := 0;
-BEGIN
-  select count(*) into counter from methoddelimiter where delimiterkey = 1;
-
-   IF counter=0 THEN       -- name is free
-INSERT into methoddelimiter (status, usercode, delimiterkey, parsermethodkey)
-SELECT 1,1,1,1
-WHERE NOT EXISTS (select * from methoddelimiter where delimiterkey = 1); 
-   END IF;
-END
-$do$;
-
-DO
-$do$
-DECLARE
-    counter integer := 0;
-BEGIN
-  select count(*) into counter from delimiter where delimitername='None';
-
-   IF counter=0 THEN       -- name is free
-INSERT into delimiter (delimitername,actualdelimiter,status,usercode) 
-SELECT 'None', 'None', 1, 1 WHERE NOT EXISTS (SELECT delimitername FROM delimiter WHERE delimitername = 'None'); 
-ELSE
-update delimiter set actualdelimiter = 'None' where delimitername='None' and status=1;
-END IF;
-END
-$do$;
-
-
 update LSusergrouprightsmaster set displaytopic = 'Pending Work' where displaytopic = 'Pending' and sequenceorder = 3;
 update LSusergrouprightsmaster set displaytopic = 'Completed Work' where displaytopic = 'Completed' and sequenceorder = 3;
 update LSusergrouprights set displaytopic = 'Pending Work' where displaytopic = 'Pending' and sequenceorder = 3;
