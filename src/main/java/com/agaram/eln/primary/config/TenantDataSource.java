@@ -114,9 +114,9 @@ public class TenantDataSource implements Serializable {
             
         HikariDataSource dataSource = new HikariDataSource(configuration);
         
-//        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
-//        flyway.repair();
-//        flyway.migrate();
+        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+        flyway.repair();
+        flyway.migrate();
         
         return dataSource;
         }
