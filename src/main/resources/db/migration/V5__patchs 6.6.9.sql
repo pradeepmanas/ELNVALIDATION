@@ -104,3 +104,22 @@ insert into lsaudittrailconfigmaster values(77,0,'Protocol Order And Register',7
 insert into lsaudittrailconfigmaster values(78,0,'Protocol Order And Register',74,'Protocol Order And Register','Process Protocol')ON CONFLICT(serialno)DO NOTHING;
 insert into lsaudittrailconfigmaster values(79,0,'Protocol Order And Register',75,'Protocol Order And Register','Save')ON CONFLICT(serialno)DO NOTHING;
 insert into lsaudittrailconfigmaster values(80,0,'Protocol Order And Register',77,'Protocol Order And Register','Complete task')ON CONFLICT(serialno)DO NOTHING;
+
+update LSusergrouprightsmaster set sallow = '0' where displaytopic = 'Add repository' and sallow= 'NA';
+update LSusergrouprightsmaster set sallow = '0' where displaytopic = 'Edit repository' and sallow= 'NA';
+
+update LSusergrouprights set sallow = '0' where displaytopic = 'Add repository' and sallow= 'NA';
+update LSusergrouprights set sallow = '0' where displaytopic = 'Edit repository' and sallow= 'NA';
+
+update lsusergrouprightsmaster set displaytopic = 'Audit trail configuration' where displaytopic = 'Audit Trail Configuration';
+update lsusergrouprightsmaster set displaytopic = 'Audit trail history' where displaytopic = 'Audit Trail History';
+
+update lsusergrouprights set displaytopic = 'Audit trail configuration' where displaytopic = 'Audit Trail Configuration';
+update lsusergrouprights set displaytopic = 'Audit trail history' where displaytopic = 'Audit Trail History';
+
+delete from lsusergrouprightsmaster where modulename = 'Register Task Orders & Execute' and displaytopic in ('Assigned Orders','My Orders');
+delete from lsusergrouprights where modulename = 'Register Task Orders & Execute' and displaytopic in ('Assigned Orders','My Orders');
+
+ALTER TABLE IF Exists lsprotocolstep ADD COLUMN IF NOT EXISTS   timer jsonb;
+
+ALTER TABLE IF Exists lslogilabprotocolsteps ADD COLUMN IF NOT EXISTS   timer jsonb;
