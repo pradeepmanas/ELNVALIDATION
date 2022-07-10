@@ -172,3 +172,55 @@ insert into lssheetorderstructure(datecreated, datemodified, parentdircode, path
 values (NOW(),NOW(),-1,'Sheet/my order', 124, 'my order');
 
 update lslogilablimsorderdetail set directorycode = 1;
+
+DO
+$do$
+DECLARE
+   _kind "char";
+BEGIN
+   SELECT relkind
+   FROM   pg_class
+   WHERE  relname = 'lsresultfieldvalues_sno_seq' 
+   INTO  _kind;
+
+   IF NOT FOUND THEN       
+      CREATE SEQUENCE lsresultfieldvalues_sno_seq;
+   ELSIF _kind = 'S' THEN  
+      -- do nothing?
+   ELSE                    -- object name exists for different kind
+      -- do something!
+   END IF;
+END
+$do$;
+
+
+CREATE TABLE IF NOT EXISTS public.lsresultfieldvalues
+(
+    sno integer NOT NULL DEFAULT nextval('lsresultfieldvalues_sno_seq'::regclass),
+    fieldname character varying(100) COLLATE pg_catalog."default",
+    fieldvalue character varying(100) COLLATE pg_catalog."default",
+    resseqno integer,
+    resultid integer,
+    CONSTRAINT lsresultfieldvalues_pkey PRIMARY KEY (sno),
+    CONSTRAINT fk6awbvwq8363r0pdi4dmsf6g58 FOREIGN KEY (resultid)
+        REFERENCES public.elnresultdetails (resultid) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.lsresultfieldvalues
+    OWNER to postgres;
+    
+ALTER TABLE IF Exists elnresultdetails ADD COLUMN IF NOT EXISTS parserfieldkey integer;
+
+ALTER TABLE IF Exists lsprotocolorderversion ADD COLUMN IF NOT EXISTS createdby integer;
+    
+INSERT into LSusergrouprightsmaster (orderno, displaytopic, modulename, sallow, screate, sdelete,sedit, status,sequenceorder) SELECT 78, 'Unlock Orders', 'Base Master', '0', 'NA', 'NA', '0', '0,0,1',73WHERE NOT EXISTS (select * from LSusergrouprightsmaster where displaytopic = 'Unlock Orders'); 
+
+INSERT into LSusergrouprights(displaytopic,modulename,createdby, sallow, screate, sdelete, sedit,lssitemaster_sitecode, usergroupid_usergroupcode) SELECT 'Unlock Orders', 'Base Master', 'administrator', '1', 'NA', 'NA', '1', 1,1  WHERE NOT EXISTS (select * from LSusergrouprights where displaytopic = 'Unlock Orders' and usergroupid_usergroupcode = 1); 
+
+ALTER TABLE IF Exists LSusergrouprights ADD COLUMN IF NOT EXISTS sequenceorder integer;
