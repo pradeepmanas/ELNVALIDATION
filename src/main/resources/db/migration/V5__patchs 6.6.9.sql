@@ -385,6 +385,38 @@ ALTER TABLE IF EXISTS public.elnfileattachments
 
 ALTER TABLE IF Exists lsprotocolmaster ADD COLUMN IF NOT EXISTS defaulttemplate integer;
     
-    
+CREATE TABLE public.elnresultdetails
+(
+    resultid integer NOT NULL DEFAULT nextval('elnresultdetails_resultid_seq'::regclass),
+    batchcode numeric(17,0) NOT NULL,
+    createddate timestamp without time zone,
+    filerefname character varying(255) COLLATE pg_catalog."default",
+    methodkey integer,
+    paramname character varying(255) COLLATE pg_catalog."default",
+    parserblockkey integer,
+    results character varying(255) COLLATE pg_catalog."default",
+    seqnumber integer,
+    usercode integer NOT NULL,
+    sitecode integer NOT NULL,
+    status integer,
+    parserfieldkey integer,
+    CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid),
+    CONSTRAINT fk3e3wxpn9p7uaf7bi93lpl65kx FOREIGN KEY (sitecode)
+        REFERENCES public.lssitemaster (sitecode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fkb74gvmqkxraf9nd715upaiwvn FOREIGN KEY (usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT elnresultdetails_status_check CHECK (status <= 1 AND status >= '-1'::integer)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.elnresultdetails
+    OWNER to postgres;    
 
 
