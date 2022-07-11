@@ -402,14 +402,9 @@ CREATE TABLE IF NOT EXISTS public.elnresultdetails
     parserfieldkey integer,
     CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid),
     CONSTRAINT fk3e3wxpn9p7uaf7bi93lpl65kx FOREIGN KEY (sitecode)
-        REFERENCES public.lssitemaster (sitecode) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        REFERENCES public.lssitemaster (sitecode) ,
     CONSTRAINT fkb74gvmqkxraf9nd715upaiwvn FOREIGN KEY (usercode)
-        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
-    CONSTRAINT elnresultdetails_status_check CHECK (status <= 1 AND status >= '-1'::integer)
+        REFERENCES public.lsusermaster (usercode) 
 )
 WITH (
     OIDS = FALSE
