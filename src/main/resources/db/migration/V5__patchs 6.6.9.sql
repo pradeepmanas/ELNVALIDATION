@@ -385,7 +385,7 @@ ALTER TABLE IF EXISTS public.elnfileattachments
 
 ALTER TABLE IF Exists lsprotocolmaster ADD COLUMN IF NOT EXISTS defaulttemplate integer;
     
-CREATE TABLE public.elnresultdetails
+CREATE TABLE IF NOT EXISTS public.elnresultdetails
 (
     resultid integer NOT NULL DEFAULT nextval('elnresultdetails_resultid_seq'::regclass),
     batchcode numeric(17,0) NOT NULL,
