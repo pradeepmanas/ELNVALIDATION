@@ -381,6 +381,9 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.elnfileattachments
     OWNER to postgres;
+
+
+ALTER TABLE IF Exists lsprotocolmaster ADD COLUMN IF NOT EXISTS defaulttemplate integer;
     
     
 
