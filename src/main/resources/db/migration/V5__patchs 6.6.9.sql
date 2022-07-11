@@ -384,6 +384,26 @@ ALTER TABLE IF EXISTS public.elnfileattachments
 
 
 ALTER TABLE IF Exists lsprotocolmaster ADD COLUMN IF NOT EXISTS defaulttemplate integer;
+
+DO
+$do$
+DECLARE
+   _kind "char";
+BEGIN
+   SELECT relkind
+   FROM   pg_class
+   WHERE  relname = 'elnresultdetails_resultid_seq' 
+   INTO  _kind;
+
+   IF NOT FOUND THEN       
+      CREATE SEQUENCE elnresultdetails_resultid_seq;
+   ELSIF _kind = 'S' THEN  
+      -- do nothing?
+   ELSE                    -- object name exists for different kind
+      -- do something!
+   END IF;
+END
+$do$;
     
 CREATE TABLE IF NOT EXISTS public.elnresultdetails
 (
@@ -400,7 +420,16 @@ CREATE TABLE IF NOT EXISTS public.elnresultdetails
     sitecode integer NOT NULL,
     status integer,
     parserfieldkey integer,
-    CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid)
+    CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid),
+    CONSTRAINT fk3e3wxpn9p7uaf7bi93lpl65kx FOREIGN KEY (sitecode)
+        REFERENCES public.lssitemaster (sitecode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fkb74gvmqkxraf9nd715upaiwvn FOREIGN KEY (usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT elnresultdetails_status_check CHECK (status <= 1 AND status >= '-1'::integer)
 )
 WITH (
     OIDS = FALSE
