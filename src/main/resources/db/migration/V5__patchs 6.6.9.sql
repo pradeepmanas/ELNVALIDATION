@@ -400,11 +400,7 @@ CREATE TABLE IF NOT EXISTS public.elnresultdetails
     sitecode integer NOT NULL,
     status integer,
     parserfieldkey integer,
-    CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid),
-    CONSTRAINT fk3e3wxpn9p7uaf7bi93lpl65kx FOREIGN KEY (sitecode)
-        REFERENCES public.lssitemaster (sitecode) ,
-    CONSTRAINT fkb74gvmqkxraf9nd715upaiwvn FOREIGN KEY (usercode)
-        REFERENCES public.lsusermaster (usercode) 
+    CONSTRAINT elnresultdetails_pkey PRIMARY KEY (resultid)
 )
 WITH (
     OIDS = FALSE
