@@ -346,5 +346,42 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.lsresultfieldvalues
     OWNER to postgres;
+    
+    -- Table: public.elnfileattachments
+
+-- DROP TABLE IF EXISTS public.elnfileattachments;
+
+CREATE TABLE IF NOT EXISTS public.elnfileattachments
+(
+    attachmentcode bigint NOT NULL,
+    batchcode numeric(17,0),
+    createdate timestamp without time zone,
+    fileextension character varying(10) COLLATE pg_catalog."default",
+    fileid character varying(250) COLLATE pg_catalog."default",
+    filename character varying(250) COLLATE pg_catalog."default",
+    islargefile integer,
+    methodkey integer,
+    modifieddate timestamp without time zone,
+    createby_usercode integer,
+    modifiedby_usercode integer,
+    CONSTRAINT elnfileattachments_pkey PRIMARY KEY (attachmentcode),
+    CONSTRAINT fk1jd5ua7hdqnjmyy9lkcffmaiq FOREIGN KEY (createby_usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fknejj0mrkl68yn315an2hk10mv FOREIGN KEY (modifiedby_usercode)
+        REFERENCES public.lsusermaster (usercode) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.elnfileattachments
+    OWNER to postgres;
+    
+    
 
 
