@@ -457,3 +457,6 @@ AND table_name='lsresultfieldvalues';
 END
 $do$;  
 
+update lsusergrouprightsmaster set modulename='Parser' where displaytopic='Instrument Master'and modulename='Base Master';
+
+update lsusergrouprights set modulename='Parser' where displaytopic='Instrument Master'and modulename='Base Master';
